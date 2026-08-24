@@ -1,0 +1,9 @@
+{
+  "name": "ruilisi-p0-prototype",
+  "version": "0.7.1-a",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-static.cjs"
+  }
+}

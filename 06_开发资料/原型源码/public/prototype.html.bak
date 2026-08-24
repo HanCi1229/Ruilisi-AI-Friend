@@ -1,0 +1,4706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>瑞丽丝 P0 交互原型 v0.7.1a · 数字生命桌面版</title>
+  <style>
+    :root {
+      --bg-0: #050812;
+      --bg-1: #091021;
+      --bg-2: #101a31;
+      --panel-bg: rgba(8, 17, 35, 0.84);
+      --panel-border: rgba(136, 163, 223, 0.30);
+      --panel-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      --text-primary: #eef3ff;
+      --text-muted: #a6b5d1;
+      --accent: #5cd7f4;
+      --accent-soft: rgba(92, 215, 244, 0.14);
+      --scene-scrim: linear-gradient(90deg, rgba(3, 8, 18, .14) 0%, transparent 38%, rgba(4, 9, 20, .26) 72%, rgba(4, 9, 20, .58) 100%);
+      --scene-glow: linear-gradient(180deg, rgba(3, 8, 18, .18), transparent 24%, transparent 68%, rgba(3, 8, 18, .38));
+      --scene-transition-duration: 820ms;
+      --motion-factor: 1;
+      --panel: var(--panel-bg);
+      --panel-strong: rgba(13, 22, 42, 0.96);
+      --line: var(--panel-border);
+      --line-strong: rgba(137, 124, 246, 0.74);
+      --text: var(--text-primary);
+      --muted: var(--text-muted);
+      --cyan: #5cd7f4;
+      --violet: #9a85ff;
+      --green: #77d8ad;
+      --gold: #f2bd68;
+      --danger: #ff8e9e;
+      --shadow: var(--panel-shadow);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 72% 18%, rgba(92, 215, 244, 0.08), transparent 30%),
+        radial-gradient(circle at 38% 28%, rgba(154, 133, 255, 0.12), transparent 34%),
+        var(--bg-0);
+      color: var(--text);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      min-width: 980px;
+      min-height: 620px;
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    .cosmos {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(5,8,18,0.12), rgba(5,8,18,0.72)),
+        radial-gradient(ellipse at 67% 16%, rgba(80, 124, 192, 0.17), transparent 40%);
+      z-index: -4;
+    }
+
+    .star-field,
+    .star-field::before,
+    .star-field::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background-image:
+        radial-gradient(circle, rgba(230,238,255,.75) 0 1px, transparent 1.6px),
+        radial-gradient(circle, rgba(92,215,244,.42) 0 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(154,133,255,.34) 0 1px, transparent 1.5px);
+      background-size: 150px 160px, 220px 190px, 300px 250px;
+      background-position: 12px 8px, 70px 30px, 180px 100px;
+      opacity: .35;
+      animation: drift 36s linear infinite;
+    }
+    .star-field::before { transform: scale(1.25); opacity: .2; animation-duration: 52s; }
+    .star-field::after { transform: scale(.86); opacity: .3; animation-duration: 43s; animation-direction: reverse; }
+
+    @keyframes drift {
+      to { background-position: 312px 208px, 510px 320px, 780px 470px; }
+    }
+
+    .topbar {
+      position: absolute;
+      top: 24px;
+      left: 32px;
+      right: 32px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 40;
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 11px 14px 11px 14px;
+      border: 1px solid rgba(92,215,244,.72);
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,255,255,.9) 0 2px, transparent 3px),
+        linear-gradient(145deg, rgba(92,215,244,.24), rgba(154,133,255,.28));
+      box-shadow: inset 0 0 18px rgba(92,215,244,.15), 0 0 30px rgba(92,215,244,.08);
+      transform: rotate(12deg);
+    }
+
+    .brand-text strong {
+      display: block;
+      font-size: 14px;
+      letter-spacing: .16em;
+    }
+
+    .brand-text span {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .06em;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      pointer-events: auto;
+    }
+
+    .icon-btn,
+    .ghost-btn,
+    .soft-btn,
+    .primary-btn,
+    .choice-btn,
+    .object-card {
+      border: 1px solid var(--line);
+      background: rgba(12, 20, 38, 0.62);
+      cursor: pointer;
+      transition: transform .18s var(--ease), border-color .18s, background .18s, box-shadow .18s, opacity .18s;
+    }
+
+    .icon-btn {
+      min-width: 42px;
+      height: 40px;
+      border-radius: 14px;
+      color: var(--muted);
+      backdrop-filter: blur(12px);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: rgba(92,215,244,.64);
+      background: rgba(20, 31, 55, .88);
+      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+    }
+
+    button:active:not(:disabled) { transform: translateY(0) scale(.985); }
+    button:disabled { opacity: .48; cursor: default; }
+
+    .prototype-badge {
+      position: absolute;
+      top: 96px;
+      right: 34px;
+      z-index: 20;
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(154,133,255,.55);
+      color: #d9d1ff;
+      background: rgba(15,20,39,.72);
+      font-size: 12px;
+      letter-spacing: .04em;
+      backdrop-filter: blur(14px);
+    }
+
+    .scene-shell {
+      position: absolute;
+      left: 4.5vw;
+      right: 4.5vw;
+      top: 112px;
+      bottom: 54px;
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(106, 134, 194, .42);
+      background: linear-gradient(155deg, rgba(11, 18, 34, .92), rgba(8, 13, 25, .84));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .scene-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0 12%, rgba(92,215,244,.025) 50%, transparent 88%),
+        radial-gradient(circle at 60% 40%, rgba(154,133,255,.12), transparent 35%);
+      pointer-events: none;
+    }
+
+    .residence {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .window {
+      position: absolute;
+      left: 31%;
+      right: 7%;
+      top: 8%;
+      height: 46%;
+      border-radius: 180px 180px 62px 62px;
+      border: 1px solid rgba(137, 124, 246, .58);
+      background:
+        radial-gradient(circle at 76% 24%, rgba(92,215,244,.22) 0 38px, transparent 40px),
+        radial-gradient(circle at 38% 66%, rgba(154,133,255,.12), transparent 42%),
+        linear-gradient(180deg, rgba(20,31,58,.96), rgba(16,25,47,.82));
+      box-shadow: inset 0 0 70px rgba(99, 118, 193, .10);
+    }
+
+    .window::before {
+      content: "";
+      position: absolute;
+      left: 9%;
+      right: 9%;
+      top: 18%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(92,215,244,.66), transparent);
+      box-shadow: 0 92px 0 rgba(154,133,255,.28);
+    }
+
+    .deep-orbit {
+      position: absolute;
+      width: 50%;
+      height: 26%;
+      left: 40%;
+      top: 16%;
+      border: 1px solid rgba(154,133,255,.52);
+      border-radius: 50%;
+      transform: rotate(-7deg);
+      opacity: .72;
+      animation: orbit 9s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbit {
+      to { transform: rotate(-3deg) translateX(8px); opacity: .9; }
+    }
+
+    .living-floor {
+      position: absolute;
+      left: 3.5%;
+      right: 3.5%;
+      bottom: 5%;
+      height: 35%;
+      border-radius: 30px;
+      border: 1px solid rgba(95, 122, 181, .38);
+      background:
+        linear-gradient(180deg, rgba(18,25,44,.70), rgba(10,16,30,.94)),
+        radial-gradient(circle at 75% 0%, rgba(92,215,244,.08), transparent 45%);
+    }
+
+    .floor-line {
+      position: absolute;
+      left: 34%;
+      right: 11%;
+      bottom: 38%;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(92,215,244,.6), transparent);
+      opacity: .65;
+    }
+
+    .sofa {
+      position: absolute;
+      right: 8%;
+      bottom: 27%;
+      width: 13%;
+      height: 10%;
+      min-width: 130px;
+      border-radius: 22px 22px 14px 14px;
+      border: 1px solid rgba(106,134,194,.42);
+      background: linear-gradient(180deg, #19243d, #111a2d);
+      box-shadow: 0 20px 30px rgba(0,0,0,.18);
+    }
+
+    .side-table {
+      position: absolute;
+      right: 22%;
+      bottom: 21%;
+      width: 7%;
+      min-width: 82px;
+      height: 8%;
+      border-radius: 14px;
+      border: 1px solid rgba(106,134,194,.42);
+      background: rgba(20,30,51,.88);
+    }
+
+    .character-wrap {
+      position: absolute;
+      left: 14%;
+      bottom: 17%;
+      width: 210px;
+      height: 390px;
+      transform-origin: 50% 100%;
+      transition: left .75s var(--ease), bottom .75s var(--ease), transform .75s var(--ease), opacity .5s;
+      filter: drop-shadow(0 24px 22px rgba(0,0,0,.32));
+      z-index: 8;
+    }
+
+    .character-wrap.center { left: 52%; transform: translateX(-50%) scale(.94); }
+    .character-wrap.right { left: 64%; transform: scale(.9); }
+    .character-wrap.seated { left: 57%; bottom: 10%; transform: scale(.86) rotate(-1deg); }
+    .character-wrap.working { left: 59%; bottom: 16%; transform: scale(.88) rotate(1deg); }
+    .character-wrap.fade { opacity: .35; }
+
+    .character {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hair-back {
+      position: absolute;
+      width: 132px;
+      height: 176px;
+      left: 38px;
+      top: 18px;
+      border-radius: 64% 52% 48% 58%;
+      background: linear-gradient(145deg, #a4a8e5, #665992 65%, #383253);
+      box-shadow: inset -18px -16px 30px rgba(36,30,65,.4);
+    }
+
+    .hair-tail {
+      position: absolute;
+      left: 112px;
+      top: 94px;
+      width: 72px;
+      height: 214px;
+      border-radius: 70% 40% 76% 32%;
+      background: linear-gradient(175deg, #8b86c5, #51486f 72%, rgba(56,50,83,.2));
+      transform: rotate(-6deg);
+      transform-origin: top;
+      animation: hairSway 4.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes hairSway { to { transform: rotate(3deg) translateX(5px); } }
+
+    .head {
+      position: absolute;
+      left: 62px;
+      top: 48px;
+      width: 86px;
+      height: 102px;
+      border-radius: 46% 46% 48% 48%;
+      background: linear-gradient(145deg, #e8ecfa, #b9c5e1);
+      border: 1px solid rgba(255,255,255,.6);
+      z-index: 3;
+    }
+
+    .face-eye {
+      position: absolute;
+      top: 92px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 14px rgba(92,215,244,.72);
+      z-index: 4;
+    }
+    .face-eye.left { left: 84px; }
+    .face-eye.right { left: 119px; }
+
+    .body {
+      position: absolute;
+      left: 48px;
+      top: 143px;
+      width: 114px;
+      height: 151px;
+      border-radius: 42px 42px 28px 28px;
+      background: linear-gradient(155deg, #4a567e, #2f385a 62%, #232b48);
+      border: 1px solid rgba(118,139,196,.46);
+      z-index: 2;
+    }
+
+    .body::after {
+      content: "";
+      position: absolute;
+      left: 49%;
+      top: 18px;
+      width: 18px;
+      height: 105px;
+      border-radius: 9px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, var(--cyan), rgba(92,215,244,.36));
+      opacity: .76;
+    }
+
+    .arm {
+      position: absolute;
+      width: 34px;
+      height: 132px;
+      top: 162px;
+      border-radius: 18px;
+      background: #303a5d;
+      z-index: 1;
+      transition: transform .7s var(--ease);
+    }
+    .arm.left { left: 29px; transform: rotate(7deg); transform-origin: top; }
+    .arm.right { right: 29px; transform: rotate(-7deg); transform-origin: top; }
+    .character.greeting .arm.right { transform: rotate(-48deg) translate(-8px, -10px); }
+    .character.reading .arm.left { transform: rotate(-42deg) translate(12px, -8px); }
+    .character.reading .arm.right { transform: rotate(42deg) translate(-12px, -8px); }
+
+    .leg {
+      position: absolute;
+      top: 281px;
+      width: 39px;
+      height: 105px;
+      border-radius: 18px 18px 24px 24px;
+      background: linear-gradient(180deg, #273050, #1c2440);
+      z-index: 1;
+    }
+    .leg.left { left: 59px; }
+    .leg.right { left: 111px; }
+
+    .book {
+      display: none;
+      position: absolute;
+      left: 60px;
+      top: 232px;
+      width: 95px;
+      height: 54px;
+      border-radius: 7px;
+      background: linear-gradient(90deg, #171f34 49%, #7985b9 50%, #171f34 51%);
+      border: 1px solid rgba(154,133,255,.48);
+      transform: rotate(-4deg);
+      z-index: 5;
+    }
+    .character.reading .book { display: block; }
+
+    .object-anchor {
+      position: absolute;
+      right: 23%;
+      bottom: 30%;
+      width: 120px;
+      height: 120px;
+      z-index: 7;
+      opacity: 0;
+      transform: translateY(15px) scale(.9);
+      transition: opacity .5s, transform .7s var(--ease);
+    }
+
+    .object-anchor.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+    .lamp-object, .plant-object, .player-object { display: none; width: 100%; height: 100%; position: relative; }
+    .object-anchor[data-object="lamp"] .lamp-object,
+    .object-anchor[data-object="plant"] .plant-object,
+    .object-anchor[data-object="player"] .player-object { display: block; }
+
+    .lamp-glow {
+      position: absolute;
+      left: 26px;
+      top: 6px;
+      width: 64px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,224,163,.95), rgba(242,189,104,.4) 46%, transparent 72%);
+      filter: blur(1px);
+      animation: breathe 3s ease-in-out infinite;
+    }
+    .lamp-core {
+      position: absolute;
+      left: 46px;
+      top: 28px;
+      width: 28px;
+      height: 40px;
+      border-radius: 50%;
+      background: #ffd99b;
+      border: 1px solid #fff1cf;
+      box-shadow: 0 0 34px rgba(242,189,104,.9);
+    }
+    .lamp-base {
+      position: absolute;
+      left: 34px;
+      top: 76px;
+      width: 54px;
+      height: 11px;
+      border-radius: 8px;
+      background: #b68a4c;
+    }
+
+    @keyframes breathe { 50% { transform: scale(1.08); opacity: .75; } }
+
+    .plant-pot {
+      position: absolute;
+      left: 37px;
+      top: 74px;
+      width: 50px;
+      height: 36px;
+      border-radius: 7px 7px 18px 18px;
+      background: #3a466b;
+      border: 1px solid rgba(132,151,210,.45);
+    }
+    .leaf {
+      position: absolute;
+      width: 38px;
+      height: 62px;
+      border-radius: 70% 30% 70% 30%;
+      background: linear-gradient(145deg, #7ae1b2, #44aa8b);
+      transform-origin: bottom center;
+      box-shadow: 0 0 20px rgba(119,216,173,.18);
+    }
+    .leaf.a { left: 27px; top: 22px; transform: rotate(-24deg); }
+    .leaf.b { left: 54px; top: 9px; transform: rotate(12deg); }
+    .leaf.c { left: 72px; top: 30px; transform: rotate(32deg) scale(.72); display: none; }
+    .plant-object.grown .leaf.c { display: block; animation: leafIn .8s var(--ease); }
+    @keyframes leafIn { from { transform: rotate(32deg) scale(.1); opacity: 0; } }
+
+    .player-body {
+      position: absolute;
+      left: 18px;
+      top: 38px;
+      width: 92px;
+      height: 58px;
+      border-radius: 15px;
+      background: linear-gradient(145deg, #273552, #121b30);
+      border: 1px solid rgba(92,215,244,.48);
+      box-shadow: inset 0 0 18px rgba(92,215,244,.06);
+    }
+    .player-dial {
+      position: absolute;
+      left: 34px;
+      top: 57px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--cyan);
+      background: #18253c;
+    }
+    .player-display {
+      position: absolute;
+      left: 67px;
+      top: 60px;
+      width: 27px;
+      height: 8px;
+      border-radius: 5px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px rgba(92,215,244,.65);
+    }
+    .sound-wave {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+    .player-object.playing .sound-wave { opacity: 1; }
+    .sound-wave span {
+      position: absolute;
+      right: -8px;
+      top: 48px;
+      width: 22px;
+      height: 34px;
+      border: 1px solid rgba(92,215,244,.55);
+      border-left: 0;
+      border-radius: 0 40px 40px 0;
+      animation: wave 1.8s ease-out infinite;
+    }
+    .sound-wave span:nth-child(2) { width: 34px; right: -20px; animation-delay: .35s; }
+    @keyframes wave { from { opacity: .8; transform: scale(.7); } to { opacity: 0; transform: scale(1.25); } }
+
+    .content-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 16;
+      pointer-events: none;
+    }
+
+    .panel {
+      position: absolute;
+      border: 1px solid rgba(113,137,194,.48);
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      backdrop-filter: blur(22px);
+      box-shadow: var(--shadow);
+      pointer-events: auto;
+      transition: opacity .35s, transform .45s var(--ease);
+    }
+
+    .panel.hidden {
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+    }
+
+    .story-panel {
+      width: min(520px, 42vw);
+      left: 7.5%;
+      top: 16%;
+      padding: 24px 26px 22px;
+    }
+
+    .dialogue-panel {
+      width: min(610px, 47vw);
+      left: 34%;
+      bottom: 14%;
+      padding: 20px 24px 22px;
+    }
+
+    .dialogue-panel.compact { width: min(500px, 40vw); left: 8%; bottom: 22%; }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+
+    h1, h2, p { margin: 0; }
+    .panel h1 { font-size: clamp(26px, 2.3vw, 38px); letter-spacing: -.02em; margin-bottom: 10px; }
+    .panel h2 { font-size: clamp(20px, 1.7vw, 28px); margin-bottom: 9px; }
+    .panel p { color: var(--muted); line-height: 1.7; font-size: 15px; }
+
+    .dialogue {
+      font-size: clamp(17px, 1.55vw, 23px);
+      line-height: 1.65;
+      margin-top: 6px;
+      color: var(--text);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .choice-btn, .soft-btn, .primary-btn, .ghost-btn {
+      min-height: 46px;
+      padding: 0 19px;
+      border-radius: 15px;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, rgba(92,215,244,.24), rgba(154,133,255,.24));
+      border-color: rgba(92,215,244,.64);
+    }
+
+    .soft-btn { background: rgba(19,29,51,.8); }
+    .ghost-btn { background: transparent; color: var(--muted); }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .input-row input {
+      flex: 1;
+      height: 48px;
+      border-radius: 15px;
+      border: 1px solid rgba(113,137,194,.48);
+      color: var(--text);
+      background: rgba(6,11,22,.62);
+      outline: none;
+      padding: 0 15px;
+      transition: border-color .18s, box-shadow .18s;
+    }
+
+    .input-row input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 3px rgba(92,215,244,.10);
+    }
+
+
+    .chat-experience {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .ambient-chat {
+      position: absolute;
+      left: 50%;
+      bottom: 132px;
+      transform: translateX(-50%);
+      width: min(560px, calc(100% - 96px));
+      max-height: 34vh;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
+      pointer-events: auto;
+      overflow: hidden;
+      transition:
+        max-height .28s var(--ease),
+        padding .28s var(--ease),
+        background .28s,
+        border-color .28s,
+        box-shadow .28s;
+    }
+
+    .ambient-chat.expanded {
+      max-height: 46vh;
+      overflow-y: auto;
+      padding: 14px;
+      border: 1px solid rgba(113,137,194,.32);
+      border-radius: 20px;
+      background: rgba(8, 14, 28, .76);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 18px 56px rgba(0,0,0,.32);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(113,137,194,.35) transparent;
+    }
+
+    .ambient-message {
+      max-width: 76%;
+      padding: 9px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      word-break: break-word;
+      opacity: .96;
+      animation: message-in .24s var(--ease);
+    }
+
+    .ambient-chat:not(.expanded) .ambient-message:nth-last-child(n+3) {
+      display: none;
+    }
+
+    .ambient-message.assistant {
+      align-self: flex-start;
+      color: var(--text);
+      background: rgba(20, 31, 55, .74);
+      border: 1px solid rgba(113,137,194,.28);
+      border-bottom-left-radius: 5px;
+    }
+
+    .ambient-message.user {
+      align-self: flex-end;
+      color: #f6f8ff;
+      background: linear-gradient(135deg, rgba(92,215,244,.15), rgba(154,133,255,.20));
+      border: 1px solid rgba(92,215,244,.30);
+      border-bottom-right-radius: 5px;
+    }
+
+    @keyframes message-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: .96; transform: translateY(0); }
+    }
+
+    .smart-composer-shell {
+      position: absolute;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+      width: min(620px, calc(100% - 80px));
+      pointer-events: auto;
+    }
+
+    .smart-composer {
+      border: 1px solid rgba(113,137,194,.46);
+      border-radius: 24px;
+      padding: 10px 11px 9px;
+      background: rgba(8, 14, 28, .83);
+      backdrop-filter: blur(24px);
+      box-shadow:
+        0 18px 56px rgba(0,0,0,.36),
+        inset 0 1px 0 rgba(255,255,255,.025);
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+
+    .smart-composer:focus-within {
+      border-color: rgba(92,215,244,.68);
+      background: rgba(8, 14, 28, .91);
+      box-shadow:
+        0 20px 64px rgba(0,0,0,.42),
+        0 0 0 3px rgba(92,215,244,.07);
+    }
+
+    .smart-composer textarea {
+      display: block;
+      width: 100%;
+      min-height: 34px;
+      max-height: 112px;
+      resize: none;
+      overflow-y: auto;
+      border: 0;
+      outline: 0;
+      padding: 3px 7px 6px;
+      color: var(--text);
+      background: transparent;
+      line-height: 1.5;
+      font-size: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(113,137,194,.35) transparent;
+    }
+
+    .smart-composer textarea::placeholder {
+      color: rgba(166,181,209,.70);
+    }
+
+    .composer-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 38px;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .composer-icon,
+    .mode-pill,
+    .send-orb {
+      height: 36px;
+      border: 1px solid rgba(113,137,194,.30);
+      color: var(--muted);
+      background: rgba(16, 25, 46, .58);
+      cursor: pointer;
+      transition: transform .18s var(--ease), border-color .18s, color .18s, background .18s, opacity .18s;
+    }
+
+    .composer-icon {
+      width: 36px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-size: 18px;
+    }
+
+    .composer-icon:hover,
+    .mode-pill:hover {
+      color: var(--text);
+      border-color: rgba(92,215,244,.48);
+      background: rgba(22, 34, 61, .82);
+    }
+
+    .composer-icon.listening {
+      color: #effcff;
+      border-color: rgba(92,215,244,.78);
+      background: rgba(92,215,244,.18);
+      box-shadow: 0 0 0 5px rgba(92,215,244,.07), 0 0 24px rgba(92,215,244,.16);
+      animation: listen-pulse 1.3s ease-in-out infinite;
+    }
+
+    @keyframes listen-pulse {
+      50% { transform: scale(1.045); box-shadow: 0 0 0 8px rgba(92,215,244,.025), 0 0 28px rgba(92,215,244,.20); }
+    }
+
+    .mode-select {
+      position: relative;
+      min-width: 0;
+    }
+
+    .mode-pill {
+      min-width: 104px;
+      max-width: 144px;
+      border-radius: 12px;
+      padding: 0 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .mode-pill span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mode-caret {
+      font-size: 11px;
+      opacity: .72;
+    }
+
+    .response-mode-menu {
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 10px);
+      width: 214px;
+      display: none;
+      padding: 7px;
+      border: 1px solid rgba(113,137,194,.38);
+      border-radius: 16px;
+      background: rgba(8, 14, 28, .94);
+      backdrop-filter: blur(22px);
+      box-shadow: 0 18px 54px rgba(0,0,0,.40);
+    }
+
+    .response-mode-menu.open {
+      display: grid;
+      gap: 4px;
+    }
+
+    .response-mode-menu button {
+      width: 100%;
+      min-height: 44px;
+      padding: 7px 10px;
+      border: 0;
+      border-radius: 11px;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .response-mode-menu button:hover,
+    .response-mode-menu button.active {
+      background: rgba(92,215,244,.10);
+    }
+
+    .response-mode-menu strong {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .response-mode-menu small {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    .send-orb {
+      width: 36px;
+      min-width: 36px;
+      border-radius: 50%;
+      border-color: rgba(92,215,244,.58);
+      color: #f4fbff;
+      font-size: 18px;
+      background: linear-gradient(135deg, rgba(92,215,244,.25), rgba(154,133,255,.30));
+    }
+
+    .send-orb:disabled {
+      opacity: .34;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .composer-status {
+      min-height: 18px;
+      margin-top: 6px;
+      padding: 0 8px;
+      color: rgba(166,181,209,.70);
+      font-size: 10px;
+      line-height: 1.4;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .composer-status.listening {
+      color: rgba(157, 232, 249, .92);
+    }
+
+    .history-active {
+      color: var(--cyan);
+      border-color: rgba(92,215,244,.56);
+      background: rgba(92,215,244,.11);
+    }
+
+    .mic-icon {
+      width: 15px;
+      height: 15px;
+      display: block;
+    }
+
+    .context-plus {
+      font-weight: 300;
+      line-height: 1;
+      transform: translateY(-1px);
+    }
+
+
+    .object-selection {
+      position: absolute;
+      left: 28%;
+      right: 7%;
+      top: 18%;
+      bottom: 12%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 18px;
+      align-items: stretch;
+      pointer-events: auto;
+    }
+
+    .object-card {
+      position: relative;
+      border-radius: 22px;
+      padding: 24px 18px 20px;
+      background: rgba(12,20,38,.86);
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .object-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 10%, var(--accent), transparent 42%);
+      opacity: .18;
+      pointer-events: none;
+    }
+
+    .object-card[data-object="lamp"] { --accent: var(--gold); }
+    .object-card[data-object="plant"] { --accent: var(--green); }
+    .object-card[data-object="player"] { --accent: var(--cyan); }
+
+    .object-card .preview {
+      height: 52%;
+      min-height: 150px;
+      border-radius: 17px;
+      border: 1px solid color-mix(in srgb, var(--accent) 75%, transparent);
+      background: rgba(9,15,28,.8);
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+    }
+
+    .mini-lamp, .mini-plant, .mini-player {
+      width: 82px;
+      height: 82px;
+      position: relative;
+    }
+
+    .mini-lamp::before {
+      content: "";
+      position: absolute;
+      inset: 7px 19px 24px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffe6b8, #c1924d 55%, transparent 58%);
+      box-shadow: 0 0 24px rgba(242,189,104,.55);
+    }
+    .mini-lamp::after {
+      content: "";
+      position: absolute;
+      left: 16px; right: 16px; bottom: 15px; height: 10px;
+      border-radius: 8px; background: #b68a4c;
+    }
+
+    .mini-plant::before, .mini-plant::after {
+      content: "";
+      position: absolute;
+      width: 31px; height: 54px;
+      border-radius: 70% 30% 70% 30%;
+      background: var(--green);
+      bottom: 20px;
+    }
+    .mini-plant::before { left: 15px; transform: rotate(-22deg); }
+    .mini-plant::after { left: 39px; transform: rotate(12deg); }
+    .mini-plant { border-bottom: 18px solid #46557d; border-radius: 0 0 22px 22px; }
+
+    .mini-player::before {
+      content: "";
+      position: absolute;
+      left: 5px; right: 5px; top: 20px; bottom: 10px;
+      border-radius: 15px;
+      border: 1px solid var(--cyan);
+      background: #16223a;
+    }
+    .mini-player::after {
+      content: "";
+      position: absolute;
+      width: 18px; height: 18px; border-radius: 50%;
+      left: 20px; top: 36px; border: 1px solid var(--cyan);
+      box-shadow: 33px 0 0 -6px var(--cyan);
+    }
+
+    .object-card h3 { font-size: 20px; margin: 0 0 8px; }
+    .object-card p { font-size: 13px; min-height: 45px; }
+    .object-card .select-label {
+      margin-top: 17px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .anchor-progress {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      width: min(500px, 48vw);
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 19;
+      pointer-events: none;
+    }
+
+    .anchor-ring {
+      width: 190px;
+      height: 190px;
+      margin: 0 auto 26px;
+      border-radius: 50%;
+      border: 1px solid rgba(92,215,244,.54);
+      position: relative;
+      background: radial-gradient(circle, rgba(154,133,255,.15), transparent 63%);
+      box-shadow: 0 0 90px rgba(154,133,255,.12);
+    }
+
+    .anchor-ring::before,
+    .anchor-ring::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      inset: 22px;
+      border: 2px solid transparent;
+      border-top-color: var(--cyan);
+      border-right-color: rgba(154,133,255,.58);
+      animation: spin 2.6s linear infinite;
+    }
+    .anchor-ring::after {
+      inset: 54px;
+      border-top-color: var(--violet);
+      animation-direction: reverse;
+      animation-duration: 1.7s;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .anchor-progress h2 { font-size: 25px; margin-bottom: 8px; }
+    .anchor-progress p { color: var(--muted); }
+
+    .progress-track {
+      width: 360px;
+      max-width: 80vw;
+      height: 6px;
+      border-radius: 8px;
+      background: rgba(83,104,158,.42);
+      margin: 20px auto 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--violet));
+      animation: loading 3.2s var(--ease) forwards;
+    }
+    @keyframes loading { to { width: 100%; } }
+
+    .mode-bar {
+      position: absolute;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 25;
+      pointer-events: auto;
+    }
+
+    .mode-bar .soft-btn {
+      min-height: 42px;
+      padding: 0 17px;
+      background: rgba(10,16,30,.76);
+      backdrop-filter: blur(14px);
+    }
+
+    .activity-card {
+      position: absolute;
+      right: 8%;
+      top: 14%;
+      width: 285px;
+      padding: 18px;
+      border-radius: 19px;
+      border: 1px solid rgba(113,137,194,.42);
+      background: rgba(10,16,30,.66);
+      backdrop-filter: blur(16px);
+      z-index: 10;
+    }
+
+    .activity-card strong { display: block; margin-bottom: 7px; }
+    .activity-card span { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .leave-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(4,7,15,.82);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .7s;
+    }
+    .leave-overlay.visible { opacity: 1; pointer-events: auto; }
+
+    .leave-card {
+      width: min(570px, 84vw);
+      text-align: center;
+      padding: 34px;
+      border-radius: 26px;
+      border: 1px solid rgba(113,137,194,.46);
+      background: rgba(11,18,34,.94);
+      box-shadow: var(--shadow);
+    }
+    .leave-card h2 { font-size: 28px; margin: 10px 0; }
+    .leave-card p { color: var(--muted); line-height: 1.7; }
+    .time-passed {
+      margin: 24px auto;
+      width: fit-content;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(92,215,244,.42);
+      color: var(--cyan);
+      font-size: 13px;
+    }
+
+    .memory-chip {
+      position: absolute;
+      left: 7.5%;
+      bottom: 7%;
+      z-index: 15;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(119,216,173,.55);
+      background: rgba(10,20,29,.72);
+      color: #c7f4df;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .4s, transform .5s var(--ease);
+    }
+    .memory-chip.visible { opacity: 1; transform: translateY(0); }
+
+    .toast {
+      position: absolute;
+      top: 104px;
+      left: 50%;
+      transform: translate(-50%, -15px);
+      min-width: 280px;
+      max-width: 70vw;
+      padding: 12px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(92,215,244,.42);
+      background: rgba(9,16,31,.9);
+      color: var(--text);
+      text-align: center;
+      font-size: 13px;
+      z-index: 80;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .35s var(--ease);
+    }
+    .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+
+    .review-drawer {
+      position: absolute;
+      top: 92px;
+      right: 26px;
+      bottom: 26px;
+      width: min(390px, 34vw);
+      border: 1px solid rgba(113,137,194,.42);
+      border-radius: 24px;
+      background: rgba(7,12,24,.96);
+      backdrop-filter: blur(22px);
+      box-shadow: var(--shadow);
+      z-index: 70;
+      transform: translateX(calc(100% + 40px));
+      transition: transform .45s var(--ease);
+      overflow: auto;
+      padding: 24px;
+    }
+    .review-drawer.open { transform: translateX(0); }
+    .review-drawer h3 { margin: 0 0 8px; }
+    .review-drawer p, .review-drawer li { color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .review-drawer section { padding: 17px 0; border-top: 1px solid rgba(113,137,194,.2); }
+    .review-drawer code {
+      display: block;
+      padding: 12px;
+      border-radius: 12px;
+      background: #050a14;
+      color: #b8caee;
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+
+    .state-index {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      margin-top: 12px;
+    }
+    .state-index button {
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(113,137,194,.3);
+      background: rgba(15,23,42,.75);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .state-index button.active { border-color: var(--cyan); color: var(--cyan); }
+
+    .state-caption {
+      position: absolute;
+      left: 34px;
+      bottom: 20px;
+      z-index: 25;
+      color: rgba(166,181,209,.76);
+      font-size: 11px;
+      letter-spacing: .04em;
+    }
+
+    .screen-note {
+      position: absolute;
+      right: 6%;
+      bottom: 7%;
+      z-index: 12;
+      width: 330px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.65;
+      text-align: right;
+    }
+
+    /* v0.6 · 场景分层接入
+       月海花园贯穿首次关系闭环；风眠浮原与云上列车只在 PT-11 后开放。 */
+    .scene-shell {
+      left: 2.2vw;
+      right: 2.2vw;
+      top: 88px;
+      bottom: 28px;
+      border-radius: 30px;
+      background: #07101e;
+      isolation: isolate;
+    }
+
+    .scene-shell::before {
+      z-index: 3;
+      background-image: var(--scene-scrim), var(--scene-glow);
+      transition: background-image .36s ease, opacity .36s ease;
+    }
+
+    .scene-background {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transform: scale(1.006);
+      transition: opacity var(--scene-transition-duration) var(--ease), transform var(--scene-transition-duration) var(--ease), filter var(--scene-transition-duration) var(--ease);
+      pointer-events: none;
+    }
+
+    .scene-background.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .scene-background[data-scene="moon-garden"] {
+      background-image: url("./assets/scenes/moon-garden.webp");
+      background-position: 50% 50%;
+    }
+
+    .scene-background[data-scene="wind-plain"] {
+      background-image: url("./assets/scenes/wind-plain.webp");
+      background-position: 50% 50%;
+    }
+
+    .scene-background[data-scene="cloud-terminal"] {
+      background-image: url("./assets/scenes/cloud-terminal.webp");
+      background-position: 50% 50%;
+    }
+
+    .app.scene-transitioning .scene-choice { pointer-events: none; }
+
+    .residence {
+      z-index: 2;
+    }
+
+    .residence > .window,
+    .residence > .deep-orbit,
+    .residence > .floor-line,
+    .residence > .living-floor,
+    .residence > .sofa,
+    .residence > .side-table {
+      display: none;
+    }
+
+    .character-wrap.center { left: 34%; bottom: 13%; transform: translateX(-50%) scale(.92); }
+    .character-wrap.right { left: 34%; bottom: 13%; transform: scale(.9); }
+    .character-wrap.seated { left: 31%; bottom: 8%; transform: scale(.84) rotate(-1deg); }
+    .character-wrap.working { left: 33%; bottom: 12%; transform: scale(.88) rotate(1deg); }
+
+    .story-panel {
+      width: min(500px, 36vw);
+      left: auto;
+      right: 5.5%;
+      top: 15%;
+      background: rgba(7, 15, 31, .76);
+    }
+
+    .dialogue-panel,
+    .dialogue-panel.compact {
+      width: min(500px, 38vw);
+      left: auto;
+      right: 5.5%;
+      bottom: 18%;
+      background: rgba(7, 15, 31, .80);
+    }
+
+    .object-selection {
+      left: auto;
+      right: 4.5%;
+      width: min(760px, 57%);
+      top: 22%;
+      bottom: 15%;
+      gap: 12px;
+    }
+
+    .object-card {
+      padding: 19px 15px 17px;
+      background: rgba(7, 15, 31, .86);
+    }
+
+    .object-anchor {
+      right: auto;
+      left: 19%;
+      bottom: 23%;
+    }
+
+    .activity-card {
+      right: 5.5%;
+      top: 12%;
+      width: min(310px, 26vw);
+      background: rgba(7, 15, 31, .72);
+    }
+
+    .smart-composer-shell {
+      left: auto;
+      right: 5.5%;
+      transform: none;
+      width: min(560px, 42%);
+    }
+
+    .ambient-chat {
+      left: auto;
+      right: 5.5%;
+      transform: none;
+      width: min(520px, 40%);
+    }
+
+    .mode-bar {
+      left: auto;
+      right: 5.5%;
+      transform: none;
+      bottom: 34px;
+    }
+
+    .screen-note {
+      right: 4.5%;
+      bottom: 4.5%;
+      width: 360px;
+      text-shadow: 0 1px 16px rgba(0,0,0,.65);
+    }
+
+    .prototype-badge {
+      top: 96px;
+      right: 3.2vw;
+    }
+
+    .scene-place-button {
+      position: absolute;
+      top: 108px;
+      left: 4.2vw;
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 0 15px;
+      border-radius: 999px;
+      border: 1px solid rgba(205, 221, 244, .28);
+      color: #f3f7ff;
+      background: rgba(7, 15, 31, .64);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.20);
+      z-index: 35;
+    }
+
+    .scene-place-button::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #d8e8ff;
+      box-shadow: 0 0 14px rgba(216, 232, 255, .8);
+    }
+
+    .scene-place-button.hidden { display: none; }
+
+    .scene-picker {
+      position: absolute;
+      right: 24px;
+      bottom: 96px;
+      z-index: 60;
+      width: min(320px, calc(100vw - 32px));
+      padding: 14px;
+      border: 1px solid rgba(186, 207, 238, .28);
+      border-radius: 24px;
+      background: rgba(6, 13, 28, .88);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 26px 70px rgba(0,0,0,.42);
+      opacity: 0;
+      transform: translateY(-8px);
+      pointer-events: none;
+      transition: opacity .22s, transform .28s var(--ease);
+    }
+
+    .scene-picker.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .scene-picker-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    .scene-picker-head h3 { margin: 2px 0 4px; font-size: 18px; }
+    .scene-picker-head p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .scene-picker-close {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border-radius: 12px;
+      color: #d8e8ff;
+      background: rgba(16, 29, 52, .72);
+      border-color: rgba(186, 207, 238, .24);
+    }
+
+    .scene-choice {
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      align-items: center;
+      gap: 13px;
+      width: 100%;
+      min-height: 68px;
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 17px;
+      text-align: left;
+      background: rgba(14, 25, 46, .66);
+    }
+
+    .scene-choice.current {
+      border-color: rgba(92, 215, 244, .58);
+      background: rgba(22, 42, 65, .78);
+    }
+
+    .scene-choice.locked { opacity: .58; }
+
+    .scene-thumb {
+      width: 72px;
+      height: 48px;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+    }
+
+    .scene-choice[data-scene="moon-garden"] .scene-thumb { background-image: url("./assets/scenes/moon-garden.webp"); }
+    .scene-choice[data-scene="wind-plain"] .scene-thumb { background-image: url("./assets/scenes/wind-plain.webp"); }
+    .scene-choice[data-scene="cloud-terminal"] .scene-thumb { background-image: url("./assets/scenes/cloud-terminal.webp"); }
+    .scene-choice strong { display: block; margin-bottom: 5px; color: var(--text); font-size: 14px; }
+    .scene-choice span { color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .scene-choice em { color: #d8e8ff; font-size: 11px; font-style: normal; white-space: nowrap; }
+    .more-menu {
+      position: fixed;
+      left: 50%;
+      bottom: 92px;
+      z-index: 64;
+      width: 264px;
+      padding: 10px;
+      border: 1px solid rgba(186, 207, 238, .28);
+      border-radius: 18px;
+      background: rgba(6, 13, 28, .92);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 24px 64px rgba(0,0,0,.42);
+      opacity: 0;
+      transform: translate(-50%, 8px);
+      pointer-events: none;
+      transition: opacity .2s, transform .3s var(--ease);
+    }
+
+    .more-menu.open { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+    .more-menu button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 42px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 12px;
+      color: var(--text);
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+    }
+    .more-menu button:hover { background: rgba(92,215,244,.10); }
+    .more-menu small { color: var(--muted); }
+
+    .scene-visit-label {
+      position: absolute;
+      left: 4.5%;
+      bottom: 5%;
+      z-index: 14;
+      max-width: 420px;
+      color: rgba(241, 247, 255, .86);
+      font-size: 13px;
+      letter-spacing: .02em;
+      text-shadow: 0 2px 18px rgba(0,0,0,.78);
+    }
+
+    .scene-visit-label strong { display: block; margin-bottom: 4px; font-size: 18px; }
+
+    .scene-shell[data-state="PT-02"] .activity-card,
+    .scene-shell[data-state="PT-08"] .activity-card {
+      top: 6%;
+    }
+
+    .scene-shell[data-state="PT-02"] .story-panel,
+    .scene-shell[data-state="PT-08"] .story-panel {
+      top: 27%;
+    }
+
+    .scene-shell[data-state="PT-06"] .story-panel {
+      top: 5%;
+      right: 4.5%;
+      width: min(760px, 57%);
+      padding: 17px 20px 16px;
+    }
+
+    .scene-shell[data-state="PT-06"] .story-panel h2 {
+      font-size: clamp(19px, 1.45vw, 25px);
+      margin-bottom: 5px;
+    }
+
+    .scene-shell[data-state="PT-06"] .story-panel p {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .scene-shell[data-state="PT-06"] .object-selection {
+      top: auto;
+      right: 4.5%;
+      bottom: 5%;
+      width: min(820px, 62%);
+      height: 190px;
+      gap: 10px;
+    }
+
+    .scene-shell[data-state="PT-06"] .object-card {
+      padding: 12px 13px;
+      border-radius: 18px;
+    }
+
+    .scene-shell[data-state="PT-06"] .object-card .preview {
+      height: 72px;
+      min-height: 72px;
+      margin-bottom: 9px;
+    }
+
+    .scene-shell[data-state="PT-06"] .mini-lamp,
+    .scene-shell[data-state="PT-06"] .mini-plant,
+    .scene-shell[data-state="PT-06"] .mini-player {
+      transform: scale(.68);
+    }
+
+    .scene-shell[data-state="PT-06"] .object-card h3 { margin-bottom: 4px; font-size: 15px; }
+    .scene-shell[data-state="PT-06"] .object-card p { min-height: 0; font-size: 10px; line-height: 1.4; }
+    .scene-shell[data-state="PT-06"] .object-card .select-label { margin-top: 7px; font-size: 10px; }
+
+    .scene-shell[data-state="PT-06"] .story-panel {
+      top: 8%;
+      width: min(560px, 44%);
+      padding: 16px 18px;
+    }
+
+    @media (max-width: 1120px) {
+      .character-wrap.right,
+      .character-wrap.working { left: 28%; }
+      .story-panel,
+      .dialogue-panel,
+      .dialogue-panel.compact { right: 4%; width: min(470px, 45vw); }
+      .object-selection { right: 3%; width: 65%; }
+      .smart-composer-shell { right: 4%; width: min(540px, 50%); }
+      .ambient-chat { right: 4%; width: min(500px, 48%); }
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1120px) {
+      .scene-shell { left: 2.5vw; right: 2.5vw; }
+      .object-selection { left: auto; right: 3%; width: 65%; gap: 10px; }
+      .object-card { padding: 18px 12px; }
+      .character-wrap { transform-origin: left bottom; }
+      .dialogue-panel { left: auto; right: 4%; }
+      .smart-composer-shell { left: auto; right: 4%; width: min(540px, 50%); bottom: 22px; }
+      .ambient-chat { left: auto; right: 4%; width: min(500px, 48%); bottom: 124px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+
+    /* v0.7 · 展示模式默认是桌面世界；评审信息只在显式开启后出现。 */
+    .topbar,
+    .prototype-badge,
+    .state-caption,
+    .screen-note {
+      display: none;
+    }
+
+    .app.review-mode .topbar,
+    .app.review-mode .prototype-badge,
+    .app.review-mode .state-caption,
+    .app.review-mode .screen-note {
+      display: flex;
+    }
+
+    .app.review-mode .screen-note,
+    .app.review-mode .state-caption,
+    .app.review-mode .prototype-badge { display: block; }
+
+    .scene-shell {
+      inset: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .app.review-mode .scene-shell {
+      inset: 88px 2.2vw 28px;
+      border: 1px solid rgba(106, 134, 194, .42);
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .app:not(.review-mode) .scene-place-button {
+      top: 24px;
+      left: 26px;
+      opacity: .78;
+    }
+
+    .app:not(.review-mode) .scene-picker {
+      top: auto;
+      right: 24px;
+      bottom: 96px;
+      left: auto;
+    }
+
+    .app:not(.review-mode) .review-drawer { display: none; }
+
+    .app[data-desktop-state="life"] .content-layer:empty { pointer-events: none; }
+
+    .desktop-dock {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      z-index: 38;
+      display: flex;
+      gap: 8px;
+      padding: 7px;
+      border: 1px solid rgba(205, 221, 244, .24);
+      border-radius: 20px;
+      background: rgba(6, 13, 28, .68);
+      backdrop-filter: blur(22px);
+      box-shadow: 0 18px 52px rgba(0, 0, 0, .28);
+      transform: translateX(-50%);
+      transition: opacity .3s, transform .35s var(--ease);
+    }
+
+    .desktop-dock.hidden { display: none; }
+
+    .desktop-dock button {
+      min-width: 98px;
+      min-height: 44px;
+      padding: 0 15px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      color: rgba(241, 247, 255, .88);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .desktop-dock button:hover {
+      border-color: rgba(92, 215, 244, .34);
+      background: rgba(92, 215, 244, .10);
+    }
+
+    .desktop-dock button.active {
+      border-color: rgba(92, 215, 244, .62);
+      color: #effcff;
+      background: rgba(92, 215, 244, .14);
+      box-shadow: inset 0 0 0 1px rgba(92,215,244,.10), 0 0 18px rgba(92,215,244,.08);
+    }
+
+    .activity-card.life-hint {
+      top: 26px;
+      right: 28px;
+      width: min(300px, 30vw);
+      opacity: .88;
+      animation: life-hint-away 8s forwards;
+    }
+
+    @keyframes life-hint-away {
+      0%, 68% { opacity: .88; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+    }
+
+    .context-menu {
+      position: absolute;
+      right: 5.5%;
+      bottom: 108px;
+      z-index: 55;
+      width: 290px;
+      padding: 10px;
+      border: 1px solid rgba(113, 137, 194, .38);
+      border-radius: 18px;
+      background: rgba(7, 14, 29, .94);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.40);
+    }
+
+    .context-menu button {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      width: 100%;
+      padding: 10px;
+      border: 0;
+      border-radius: 12px;
+      color: var(--text);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .context-menu button:hover { background: rgba(92,215,244,.10); }
+    .context-menu strong { display: block; font-size: 13px; }
+    .context-menu small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .context-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: rgba(92,215,244,.09); }
+
+    .task-panel {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      bottom: 18px;
+      z-index: 52;
+      width: min(420px, 38vw);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(155, 180, 226, .32);
+      border-radius: 26px;
+      background: rgba(7, 14, 29, .93);
+      backdrop-filter: blur(28px);
+      box-shadow: 0 28px 90px rgba(0,0,0,.46);
+      overflow: hidden;
+      transform: translateX(calc(100% + 40px));
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .48s var(--ease), opacity .28s;
+    }
+
+    .task-panel.open {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .task-panel[data-panel-state="ASSIST_INPUT"] {
+      top: auto;
+      bottom: 32px;
+      min-height: 330px;
+      height: auto;
+      max-height: min(420px, calc(100vh - 64px));
+    }
+
+    .task-panel[data-panel-state="ASSIST_RUNNING"] {
+      top: auto;
+      bottom: 32px;
+      min-height: 360px;
+      height: auto;
+      max-height: min(460px, calc(100vh - 64px));
+    }
+
+    .task-panel[data-panel-state="ASSIST_RESULT"] {
+      top: 18px;
+      bottom: 18px;
+      min-height: 0;
+      height: auto;
+      max-height: none;
+    }
+
+    .task-collapsible {
+      margin: 14px 0;
+      border: 1px solid rgba(113,137,194,.22);
+      border-radius: 14px;
+      background: rgba(12,22,41,.48);
+    }
+    .task-collapsible summary { padding: 12px 14px; color: var(--muted); font-size: 11px; cursor: pointer; }
+    .task-collapsible > div { padding: 0 14px 14px; }
+
+    .task-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 22px 16px;
+      border-bottom: 1px solid rgba(113,137,194,.18);
+    }
+
+    .task-head h2 { margin: 3px 0 0; font-size: 22px; }
+    .task-status { display: inline-flex; align-items: center; gap: 7px; color: #b9dff0; font-size: 11px; }
+    .task-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 12px rgba(92,215,244,.7); }
+
+    .panel-close {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      border: 1px solid rgba(113,137,194,.28);
+      color: var(--muted);
+      background: rgba(18,28,50,.68);
+      cursor: pointer;
+    }
+
+    .task-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 22px 24px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(113,137,194,.38) transparent;
+    }
+
+    .task-lead { margin: 0 0 18px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .task-section { margin-top: 18px; }
+    .task-section-label { margin-bottom: 8px; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
+
+    .material-card,
+    .result-card,
+    .focus-card {
+      border: 1px solid rgba(113,137,194,.28);
+      border-radius: 18px;
+      background: rgba(16, 27, 49, .68);
+    }
+
+    .material-card { display: flex; align-items: center; gap: 12px; padding: 13px; }
+    .material-card strong { display: block; margin-bottom: 3px; font-size: 13px; }
+    .material-card span { color: var(--muted); font-size: 11px; }
+    .file-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: var(--cyan); background: rgba(92,215,244,.10); }
+
+    .assist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .assist-grid button,
+    .task-actions button,
+    .revision-actions button,
+    .focus-actions button {
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid rgba(113,137,194,.30);
+      border-radius: 13px;
+      color: var(--text);
+      background: rgba(18, 30, 53, .68);
+      cursor: pointer;
+    }
+
+    .assist-grid button { text-align: left; }
+    .assist-grid strong { display: block; margin-bottom: 3px; font-size: 12px; }
+    .assist-grid small { color: var(--muted); font-size: 10px; }
+
+    .progress-list { display: grid; gap: 10px; }
+    .progress-item { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+    .progress-item::before { content: ""; width: 9px; height: 9px; border-radius: 50%; border: 1px solid rgba(166,181,209,.5); }
+    .progress-item.done { color: var(--text); }
+    .progress-item.done::before { border-color: var(--green); background: var(--green); box-shadow: 0 0 10px rgba(119,216,173,.36); }
+    .progress-item.active::before { border-color: var(--cyan); border-top-color: transparent; animation: task-spin .8s linear infinite; }
+    @keyframes task-spin { to { transform: rotate(360deg); } }
+
+    .result-card { padding: 18px; }
+    .result-card h3 { margin: 0 0 13px; font-size: 17px; }
+    .result-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .result-metric { padding: 10px; border-radius: 12px; background: rgba(5,11,23,.46); }
+    .result-metric strong { display: block; font-size: 19px; }
+    .result-metric span { color: var(--muted); font-size: 10px; }
+    .result-content h4 { margin: 15px 0 7px; font-size: 13px; }
+    .result-content ul { margin: 0; padding-left: 18px; }
+    .result-content li { margin: 6px 0; color: #dce6fa; font-size: 12px; line-height: 1.55; }
+
+    .task-actions,
+    .revision-actions,
+    .focus-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .task-actions .primary,
+    .focus-actions .primary { border-color: rgba(92,215,244,.58); background: linear-gradient(135deg, rgba(92,215,244,.18), rgba(154,133,255,.20)); }
+    .version-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 13px 0 0; color: var(--muted); font-size: 11px; }
+    .version-row button { border: 0; color: #dfeaff; background: transparent; cursor: pointer; }
+
+    .focus-overlay {
+      position: absolute;
+      right: 5.5%;
+      bottom: 104px;
+      z-index: 45;
+      width: min(390px, 38vw);
+      padding: 20px;
+      border: 1px solid rgba(155,180,226,.32);
+      border-radius: 22px;
+      background: rgba(7,14,29,.86);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 22px 70px rgba(0,0,0,.36);
+    }
+
+    .focus-overlay h2 { margin: 2px 0 8px; font-size: 23px; }
+    .focus-overlay p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .focus-overlay input { width: 100%; height: 48px; margin-top: 16px; padding: 0 14px; border: 1px solid rgba(113,137,194,.36); border-radius: 14px; outline: none; color: var(--text); background: rgba(5,11,23,.58); }
+    .focus-duration { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    .focus-duration button {
+      min-height: 42px;
+      border: 1px solid rgba(126,151,198,.34);
+      border-radius: 12px;
+      color: rgba(236,244,255,.92);
+      background: rgba(8,17,34,.62);
+      cursor: pointer;
+    }
+    .focus-duration button:hover { border-color: rgba(92,215,244,.46); background: rgba(18,36,58,.76); }
+    .focus-duration button.selected {
+      border-color: var(--cyan);
+      color: #f3fdff;
+      background: rgba(92,215,244,.14);
+      box-shadow: inset 0 0 0 1px rgba(92,215,244,.10), 0 0 16px rgba(92,215,244,.08);
+    }
+    .focus-timer { margin: 20px 0 8px; font-size: clamp(42px, 5vw, 68px); font-weight: 300; letter-spacing: -.04em; }
+    .focus-goal { color: #dfeaff; font-size: 14px; }
+
+    /* v0.7.1a · Stage 2A scene theme tokens. Component geometry stays global. */
+    .app[data-theme="moon-garden"] {
+      --panel-bg: rgba(7, 15, 32, .84);
+      --panel-border: rgba(142, 170, 229, .31);
+      --panel-shadow: 0 24px 76px rgba(0, 5, 20, .46);
+      --text-primary: #f1f5ff;
+      --text-muted: #a9b9d7;
+      --accent: #68d9f4;
+      --accent-soft: rgba(104, 217, 244, .14);
+      --scene-scrim: linear-gradient(90deg, rgba(3, 8, 18, .12) 0%, transparent 40%, rgba(7, 13, 29, .24) 72%, rgba(4, 9, 22, .57) 100%);
+      --scene-glow: radial-gradient(circle at 64% 22%, rgba(132, 146, 255, .09), transparent 38%);
+    }
+
+    .app[data-theme="wind-plain"] {
+      --panel-bg: rgba(34, 57, 66, .72);
+      --panel-border: rgba(202, 227, 226, .36);
+      --panel-shadow: 0 22px 64px rgba(21, 38, 43, .28);
+      --text-primary: #f7fcfb;
+      --text-muted: #d0dfdf;
+      --accent: #a8e2cf;
+      --accent-soft: rgba(168, 226, 207, .17);
+      --scene-scrim: linear-gradient(90deg, rgba(29, 52, 57, .04) 0%, transparent 47%, rgba(45, 70, 75, .16) 72%, rgba(37, 56, 65, .34) 100%);
+      --scene-glow: linear-gradient(180deg, rgba(235, 246, 244, .05), transparent 52%, rgba(30, 49, 51, .14));
+    }
+
+    .app[data-theme="cloud-terminal"] {
+      --panel-bg: rgba(20, 31, 50, .82);
+      --panel-border: rgba(170, 187, 218, .32);
+      --panel-shadow: 0 24px 72px rgba(5, 11, 27, .42);
+      --text-primary: #f3f6fb;
+      --text-muted: #b8c3d6;
+      --accent: #e4bd7a;
+      --accent-soft: rgba(228, 189, 122, .15);
+      --scene-scrim: linear-gradient(90deg, rgba(7, 13, 28, .08) 0%, transparent 42%, rgba(20, 27, 44, .20) 71%, rgba(14, 21, 37, .48) 100%);
+      --scene-glow: radial-gradient(circle at 76% 48%, rgba(228, 189, 122, .09), transparent 30%);
+    }
+
+    .panel,
+    .story-panel,
+    .dialogue-panel,
+    .activity-card,
+    .smart-composer-shell,
+    .desktop-dock,
+    .context-menu,
+    .task-panel,
+    .focus-overlay,
+    .scene-picker,
+    .more-menu,
+    .scene-visit-label,
+    .toast {
+      color: var(--text-primary);
+      border-color: var(--panel-border);
+      background-color: var(--panel-bg);
+      box-shadow: var(--panel-shadow);
+      transition: background-color .36s ease, border-color .36s ease, box-shadow .36s ease, color .36s ease;
+    }
+
+    .desktop-dock button.active,
+    .scene-choice.current,
+    .focus-duration button.selected,
+    .primary-btn {
+      border-color: var(--accent);
+      background-color: var(--accent-soft);
+    }
+
+    .app[data-theme] button:hover:not(:disabled) {
+      border-color: var(--accent);
+      background-color: var(--accent-soft);
+    }
+
+    .eyebrow,
+    .task-status,
+    .focus-kicker,
+    .scene-choice.current em { color: var(--accent); }
+
+    .scene-ambient {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .6s ease, visibility .6s step-end;
+      contain: layout paint style;
+    }
+
+    .scene-ambient.active {
+      visibility: visible;
+      opacity: 1;
+      transition: opacity .6s ease, visibility 0s;
+    }
+
+    .scene-ambient.motion-paused {
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    .scene-ambient-group {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .scene-ambient-group.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .moon-glow-layer,
+    .water-glow-layer,
+    .lamp-glow-layer,
+    .petal-layer,
+    .plain-cloud-haze-layer,
+    .plain-light-breath-layer,
+    .plain-grass-light-layer,
+    .plain-leaf-layer,
+    .terminal-cloud-layer,
+    .terminal-mist-layer,
+    .terminal-lamp-glow-layer,
+    .terminal-distant-light-layer {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .moon-glow-layer {
+      inset: 0;
+      background: radial-gradient(circle at 64% 18%, rgba(226, 236, 255, .29) 0%, rgba(194, 213, 255, .11) 9%, transparent 23%);
+      opacity: calc(.18 * var(--motion-factor));
+      animation: moon-glow-breathe 5s ease-in-out infinite;
+      will-change: opacity;
+    }
+
+    .water-glow-layer {
+      left: 49%;
+      right: 17%;
+      top: 31%;
+      bottom: -2%;
+      background: linear-gradient(96deg, transparent 19%, rgba(204, 225, 255, .08) 42%, rgba(235, 242, 255, .18) 53%, rgba(190, 216, 255, .07) 64%, transparent 81%);
+      filter: blur(10px);
+      opacity: calc(.16 * var(--motion-factor));
+      animation: moon-water-breathe 4s ease-in-out infinite alternate;
+      will-change: transform, opacity;
+    }
+
+    .lamp-glow-layer { inset: 0; }
+    .lamp-glow-layer i {
+      position: absolute;
+      width: 70px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 225, 169, .34), rgba(255, 205, 130, .11) 36%, transparent 70%);
+      filter: blur(7px);
+      opacity: calc(.18 * var(--motion-factor));
+      animation: moon-lamp-breathe 4s ease-in-out infinite;
+      will-change: opacity;
+    }
+    .lamp-glow-layer i:nth-child(1) { left: 7%; top: 60%; animation-duration: 3.2s; animation-delay: -1.1s; }
+    .lamp-glow-layer i:nth-child(2) { left: 26%; top: 50%; width: 58px; animation-duration: 4.2s; animation-delay: -2.6s; }
+    .lamp-glow-layer i:nth-child(3) { left: 42%; top: 74%; width: 64px; animation-duration: 3.6s; animation-delay: -1.9s; }
+    .lamp-glow-layer i:nth-child(4) { left: 56%; top: 69%; width: 52px; animation-duration: 4.8s; animation-delay: -3.1s; }
+
+    .petal-layer { inset: 0; overflow: hidden; }
+    .moon-petal {
+      position: absolute;
+      left: -28px;
+      top: var(--petal-start-y, 26%);
+      width: var(--petal-size, 13px);
+      height: calc(var(--petal-size, 13px) * .58);
+      border-radius: 80% 20% 72% 28%;
+      background: rgba(237, 242, 255, .82);
+      box-shadow: 0 0 5px rgba(210, 222, 255, .13);
+      opacity: 0;
+      transform: translate3d(0, 0, 0) rotate(var(--petal-start-rotation, 0deg));
+      animation: moon-petal-travel var(--petal-duration, 12s) linear forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes moon-glow-breathe {
+      0%, 100% { opacity: calc(.16 * var(--motion-factor)); }
+      50% { opacity: calc(.25 * var(--motion-factor)); }
+    }
+
+    @keyframes moon-water-breathe {
+      0% { transform: translate3d(-4px, 3px, 0) scaleX(.98); opacity: calc(.13 * var(--motion-factor)); }
+      100% { transform: translate3d(8px, -4px, 0) scaleX(1.025); opacity: calc(.23 * var(--motion-factor)); }
+    }
+
+    @keyframes moon-lamp-breathe {
+      0%, 100% { opacity: calc(.14 * var(--motion-factor)); }
+      50% { opacity: calc(.25 * var(--motion-factor)); }
+    }
+
+    @keyframes moon-petal-travel {
+      0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(var(--petal-start-rotation, 0deg)); }
+      14% { opacity: calc(var(--petal-opacity, .56) * var(--motion-factor)); }
+      78% { opacity: calc(var(--petal-opacity, .56) * var(--motion-factor)); }
+      100% { opacity: 0; transform: translate3d(calc(100vw + 72px), var(--petal-drift-y, 30vh), 0) rotate(var(--petal-end-rotation, 115deg)); }
+    }
+
+    .plain-cloud-haze-layer { inset: 26% -4% 5% 42%; overflow: hidden; }
+    .plain-cloud-haze-layer i {
+      position: absolute;
+      inset: 0 -6%;
+      background:
+        radial-gradient(ellipse at 72% 58%, rgba(245, 249, 255, .22), transparent 43%),
+        linear-gradient(100deg, transparent 4%, rgba(226, 236, 243, .12) 50%, transparent 93%);
+      opacity: calc(.22 * var(--motion-factor));
+      animation: plain-cloud-drift 5s ease-in-out infinite alternate;
+      will-change: transform, opacity;
+    }
+    .plain-cloud-haze-layer i:nth-child(2) {
+      inset: 18% -8% -10% 10%;
+      opacity: calc(.14 * var(--motion-factor));
+      animation-duration: 4.4s;
+      animation-delay: -2.1s;
+      animation-direction: alternate-reverse;
+    }
+
+    .plain-light-breath-layer {
+      inset: 0;
+      background: radial-gradient(circle at 87% 31%, rgba(255, 245, 220, .20), rgba(255, 236, 196, .07) 23%, transparent 50%);
+      opacity: calc(.18 * var(--motion-factor));
+      animation: plain-light-breathe 3.8s ease-in-out infinite;
+      will-change: opacity;
+    }
+
+    .plain-grass-light-layer {
+      left: -4%;
+      right: 27%;
+      top: 57%;
+      bottom: -8%;
+      background: linear-gradient(108deg, transparent 16%, rgba(244, 233, 185, .10) 42%, rgba(220, 239, 206, .08) 57%, transparent 78%);
+      -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.88) 28%, #000 100%);
+      mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.88) 28%, #000 100%);
+      opacity: calc(.17 * var(--motion-factor));
+      animation: plain-grass-light 4.6s ease-in-out infinite alternate;
+      will-change: transform, opacity;
+    }
+
+    .plain-leaf-layer { inset: 0; overflow: hidden; }
+    .plain-leaf {
+      position: absolute;
+      left: -34px;
+      top: var(--leaf-start-y, 18%);
+      width: var(--leaf-size, 17px);
+      height: calc(var(--leaf-size, 17px) * .46);
+      border-radius: 90% 12% 90% 12%;
+      background: rgba(102, 124, 91, .72);
+      box-shadow: none;
+      opacity: 0;
+      transform: translate3d(0, 0, 0) rotate(var(--leaf-start-rotation, -15deg));
+      animation: plain-leaf-travel var(--leaf-duration, 14s) linear forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes plain-cloud-drift {
+      0% { transform: translate3d(0, 2px, 0); opacity: calc(.16 * var(--motion-factor)); }
+      100% { transform: translate3d(calc(12px * var(--motion-factor)), -3px, 0); opacity: calc(.27 * var(--motion-factor)); }
+    }
+
+    @keyframes plain-light-breathe {
+      0%, 100% { opacity: calc(.14 * var(--motion-factor)); }
+      52% { opacity: calc(.24 * var(--motion-factor)); }
+    }
+
+    @keyframes plain-grass-light {
+      0% { transform: translate3d(0, 0, 0); opacity: calc(.13 * var(--motion-factor)); }
+      100% { transform: translate3d(calc(10px * var(--motion-factor)), 0, 0); opacity: calc(.21 * var(--motion-factor)); }
+    }
+
+    @keyframes plain-leaf-travel {
+      0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(var(--leaf-start-rotation, -15deg)); }
+      14% { opacity: calc(var(--leaf-opacity, .48) * var(--motion-factor)); }
+      78% { opacity: calc(var(--leaf-opacity, .48) * var(--motion-factor)); }
+      100% { opacity: 0; transform: translate3d(calc(100vw + 74px), var(--leaf-drift-y, 24vh), 0) rotate(var(--leaf-end-rotation, 85deg)); }
+    }
+
+    .terminal-cloud-layer { inset: 33% -5% -2% 43%; overflow: hidden; }
+    .terminal-cloud-layer i {
+      position: absolute;
+      inset: 0 -8%;
+      background:
+        radial-gradient(ellipse at 63% 67%, rgba(205, 214, 238, .14), transparent 48%),
+        linear-gradient(103deg, transparent 9%, rgba(197, 207, 230, .10) 53%, transparent 94%);
+      opacity: calc(.20 * var(--motion-factor));
+      animation: terminal-cloud-drift 5s ease-in-out infinite alternate;
+      will-change: transform, opacity;
+    }
+    .terminal-cloud-layer i:nth-child(2) {
+      inset: 19% -10% -12% 8%;
+      opacity: calc(.13 * var(--motion-factor));
+      animation-duration: 4.2s;
+      animation-delay: -2.4s;
+      animation-direction: alternate-reverse;
+    }
+
+    .terminal-mist-layer {
+      left: 34%;
+      right: -3%;
+      top: 59%;
+      bottom: -8%;
+      background: linear-gradient(96deg, transparent 2%, rgba(204, 213, 235, .08) 45%, rgba(219, 223, 239, .11) 69%, transparent 96%);
+      -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.85) 30%, #000 100%);
+      mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.85) 30%, #000 100%);
+      opacity: calc(.17 * var(--motion-factor));
+      animation: terminal-edge-mist 3.8s ease-in-out infinite alternate;
+      will-change: transform, opacity;
+    }
+
+    .terminal-lamp-glow-layer { inset: 0; }
+    .terminal-lamp-glow-layer i {
+      position: absolute;
+      width: 74px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 215, 151, .31), rgba(255, 186, 116, .08) 38%, transparent 72%);
+      filter: blur(7px);
+      opacity: calc(.18 * var(--motion-factor));
+      animation: terminal-lamp-breathe 4s ease-in-out infinite;
+      will-change: opacity;
+    }
+    .terminal-lamp-glow-layer i:nth-child(1) { left: 5%; top: 27%; animation-duration: 3.1s; animation-delay: -1.3s; }
+    .terminal-lamp-glow-layer i:nth-child(2) { left: 22%; top: 38%; width: 60px; animation-duration: 4.2s; animation-delay: -2.7s; }
+    .terminal-lamp-glow-layer i:nth-child(3) { left: 39%; top: 48%; width: 52px; animation-duration: 4.8s; animation-delay: -1.8s; }
+    .terminal-lamp-glow-layer i:nth-child(4) { left: 50%; top: 52%; width: 46px; animation-duration: 3.6s; animation-delay: -2.2s; }
+
+    .terminal-distant-light-layer { inset: 0; overflow: hidden; }
+    .terminal-distant-light {
+      position: absolute;
+      left: var(--signal-start-x, 58%);
+      top: var(--signal-start-y, 60%);
+      width: 9px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: rgba(255, 224, 167, .78);
+      box-shadow: 0 0 13px rgba(255, 206, 139, .42);
+      opacity: 0;
+      animation: terminal-distant-travel var(--signal-duration, 10s) ease-in-out forwards;
+      will-change: transform, opacity;
+    }
+
+    @keyframes terminal-cloud-drift {
+      0% { transform: translate3d(0, 2px, 0); opacity: calc(.14 * var(--motion-factor)); }
+      100% { transform: translate3d(calc(12px * var(--motion-factor)), -3px, 0); opacity: calc(.25 * var(--motion-factor)); }
+    }
+
+    @keyframes terminal-edge-mist {
+      0% { transform: translate3d(0, 3px, 0); opacity: calc(.13 * var(--motion-factor)); }
+      100% { transform: translate3d(calc(9px * var(--motion-factor)), -3px, 0); opacity: calc(.22 * var(--motion-factor)); }
+    }
+
+    @keyframes terminal-lamp-breathe {
+      0%, 100% { opacity: calc(.14 * var(--motion-factor)); }
+      50% { opacity: calc(.25 * var(--motion-factor)); }
+    }
+
+    @keyframes terminal-distant-travel {
+      0% { opacity: 0; transform: translate3d(0, 0, 0); }
+      22% { opacity: calc(.52 * var(--motion-factor)); }
+      72% { opacity: calc(.38 * var(--motion-factor)); }
+      100% { opacity: 0; transform: translate3d(var(--signal-drift-x, 76px), var(--signal-drift-y, -12px), 0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .moon-glow-layer,
+      .water-glow-layer,
+      .lamp-glow-layer i,
+      .plain-cloud-haze-layer i,
+      .plain-light-breath-layer,
+      .plain-grass-light-layer,
+      .terminal-cloud-layer i,
+      .terminal-mist-layer,
+      .terminal-lamp-glow-layer i { animation: none !important; }
+      .moon-glow-layer { opacity: .07; }
+      .water-glow-layer { opacity: .05; transform: none; }
+      .lamp-glow-layer i { opacity: .08; }
+      .plain-cloud-haze-layer i { opacity: .045; transform: none; }
+      .plain-light-breath-layer { opacity: .055; }
+      .plain-grass-light-layer { opacity: .045; transform: none; }
+      .terminal-cloud-layer i { opacity: .045; transform: none; }
+      .terminal-mist-layer { opacity: .05; transform: none; }
+      .terminal-lamp-glow-layer i { opacity: .07; }
+      .moon-petal,
+      .plain-leaf,
+      .terminal-distant-light { display: none !important; }
+    }
+    .app[data-desktop-state="assist"] .scene-shell::after,
+    .app[data-desktop-state="focus"] .scene-shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent 0 52%, rgba(4,9,20,.10) 68%, rgba(4,9,20,.28) 100%);
+    }
+
+    .app[data-character-state="CHAT"] .character-wrap { left: calc(33% - 18px); }
+    .app[data-character-state="ASSIST"] .character-wrap { left: calc(33% - 56px); }
+    .app[data-character-state="FOCUS"] .character-wrap {
+      left: 31%;
+      bottom: 7%;
+      transform: scale(.82) rotate(-2deg);
+    }
+
+    .app[data-desktop-state="chat"] .smart-composer-shell { bottom: 104px; }
+    .app[data-desktop-state="chat"] .ambient-chat { bottom: 208px; }
+
+    .character-wrap {
+      transition: left .68s cubic-bezier(.2,.8,.2,1), bottom .68s cubic-bezier(.2,.8,.2,1), transform .68s cubic-bezier(.2,.8,.2,1), opacity .5s ease-out;
+    }
+
+    @media (max-width: 1599px) and (min-width: 1400px) {
+      .task-panel { width: min(400px, 38vw); }
+    }
+
+    @media (max-width: 1399px) and (min-width: 861px) {
+      .task-panel { width: min(380px, 38vw); }
+    }
+
+    @media (max-width: 860px) {
+      .app { min-width: 0; }
+      .task-panel { inset: 10px; width: auto; }
+      .focus-overlay { left: 16px; right: 16px; bottom: 18px; width: auto; }
+      .desktop-dock { width: calc(100% - 28px); justify-content: center; }
+      .desktop-dock button { min-width: 0; flex: 1; padding: 0 8px; }
+      .character-wrap.right, .character-wrap.working, .character-wrap.seated { left: 22%; opacity: .76; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app" data-phase="2c" data-theme="moon-garden" data-motion-factor="1">
+    <div class="cosmos"><div class="star-field"></div></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-text">
+          <strong>RUILISI</strong>
+          <span>数字生命桌面原型 · P0 · v0.7.1a</span>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="reviewBtn" title="打开评审信息">评审</button>
+        <button class="icon-btn" id="resetBtn" title="重置全部原型数据">重置</button>
+      </div>
+    </header>
+
+    <div class="prototype-badge" id="prototypeBadge">PT-01 · 建立现实锚点</div>
+
+    <button class="scene-place-button hidden" id="scenePlaceBtn" type="button">月海花园</button>
+    <div class="scene-picker" id="scenePicker" aria-hidden="true">
+      <div class="scene-picker-head">
+        <div>
+          <div class="eyebrow">深穹地点</div>
+          <h3>她的世界正在展开</h3>
+          <p>选择一个想和她一起停留的地方。</p>
+        </div>
+        <button class="scene-picker-close" id="scenePickerClose" type="button" aria-label="关闭">×</button>
+      </div>
+      <div id="sceneChoices"></div>
+    </div>
+
+    <section class="scene-shell" id="sceneShell" data-state="PT-01" data-scene="moon-garden">
+      <div class="scene-background visible" id="sceneBackgroundA" data-scene="moon-garden"></div>
+      <div class="scene-background" id="sceneBackgroundB" data-scene="moon-garden"></div>
+      <div class="scene-ambient" id="sceneAmbient" aria-hidden="true">
+        <div class="scene-ambient-group moon-ambient" id="moonAmbient" data-ambient-scene="moon-garden">
+          <div class="moon-glow-layer"></div>
+          <div class="water-glow-layer"></div>
+          <div class="lamp-glow-layer"><i></i><i></i><i></i><i></i></div>
+          <div class="petal-layer" id="moonPetalLayer"></div>
+        </div>
+        <div class="scene-ambient-group plain-ambient" id="plainAmbient" data-ambient-scene="wind-plain">
+          <div class="plain-cloud-haze-layer"><i></i><i></i></div>
+          <div class="plain-light-breath-layer"></div>
+          <div class="plain-grass-light-layer"></div>
+          <div class="plain-leaf-layer" id="plainLeafLayer"></div>
+        </div>
+        <div class="scene-ambient-group terminal-ambient" id="terminalAmbient" data-ambient-scene="cloud-terminal">
+          <div class="terminal-cloud-layer"><i></i><i></i></div>
+          <div class="terminal-mist-layer"></div>
+          <div class="terminal-lamp-glow-layer"><i></i><i></i><i></i><i></i></div>
+          <div class="terminal-distant-light-layer" id="terminalDistantLightLayer"></div>
+        </div>
+      </div>
+      <div class="residence">
+        <div class="window"></div>
+        <div class="deep-orbit"></div>
+        <div class="floor-line"></div>
+        <div class="living-floor"></div>
+        <div class="sofa"></div>
+        <div class="side-table"></div>
+
+        <div class="character-wrap center fade" id="characterWrap">
+          <div class="character" id="character">
+            <div class="hair-tail"></div>
+            <div class="hair-back"></div>
+            <div class="head"></div>
+            <div class="face-eye left"></div>
+            <div class="face-eye right"></div>
+            <div class="arm left"></div>
+            <div class="arm right"></div>
+            <div class="body"></div>
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+            <div class="book"></div>
+          </div>
+        </div>
+
+        <div class="object-anchor" id="objectAnchor" data-object="">
+          <div class="lamp-object">
+            <div class="lamp-glow"></div><div class="lamp-core"></div><div class="lamp-base"></div>
+          </div>
+          <div class="plant-object" id="plantObject">
+            <div class="leaf a"></div><div class="leaf b"></div><div class="leaf c"></div><div class="plant-pot"></div>
+          </div>
+          <div class="player-object" id="playerObject">
+            <div class="player-body"></div><div class="player-dial"></div><div class="player-display"></div>
+            <div class="sound-wave"><span></span><span></span></div>
+          </div>
+        </div>
+
+        <div class="activity-card hidden" id="activityCard">
+          <strong id="activityTitle">她正在整理居所</strong>
+          <span id="activityDesc">这是她自己的生活状态，不需要用户触发。</span>
+        </div>
+
+        <div class="content-layer" id="contentLayer"></div>
+        <div class="scene-visit-label hidden" id="sceneVisitLabel"></div>
+        <div class="memory-chip" id="memoryChip"></div>
+        <div class="screen-note" id="screenNote"></div>
+      </div>
+    </section>
+
+    <div class="desktop-dock hidden" id="modeBar">
+      <button data-mode="talk">聊聊</button>
+      <button class="assist-entry" data-mode="assist">帮我一下</button>
+      <button data-mode="focus">一起专注</button>
+      <button data-mode="more" aria-label="更多">更多</button>
+    </div>
+
+    <div class="more-menu" id="moreMenu" aria-hidden="true">
+      <button type="button" data-more-action="scenes"><span>切换场景</span><small>3 个地点</small></button>
+      <button type="button" data-more-action="recent"><span>最近协作</span><small id="recentTaskCount">暂无</small></button>
+      <button type="button" data-more-action="settings"><span>设置</span><small id="motionSettingLabel">动效：自然</small></button>
+      <button type="button" data-more-action="leave"><span>暂时离开</span><small>世界继续运行</small></button>
+    </div>
+
+    <div class="context-menu hidden" id="contextMenu" aria-hidden="true">
+      <button type="button" data-context="clipboard"><span class="context-icon">粘</span><span><strong>粘贴剪贴板内容</strong><small>把眼前这段内容交给瑞丽丝</small></span></button>
+      <button type="button" data-context="upload"><span class="context-icon">档</span><span><strong>上传文件</strong><small>原型支持选择文本类材料</small></span></button>
+      <button type="button" data-context="screen"><span class="context-icon">窗</span><span><strong>截取当前窗口</strong><small>演示屏幕上下文入口</small></span></button>
+      <button type="button" data-context="text"><span class="context-icon">写</span><span><strong>输入一段文字</strong><small>直接粘贴或输入材料</small></span></button>
+      <button type="button" data-context="demo"><span class="context-icon">例</span><span><strong>使用演示会议记录</strong><small>完整体验摘要与待办闭环</small></span></button>
+    </div>
+
+    <input class="hidden" type="file" id="materialFileInput" accept=".txt,.md,.csv,.json" />
+    <aside class="task-panel" id="taskPanel" aria-hidden="true"></aside>
+    <section class="focus-overlay hidden" id="focusOverlay" aria-hidden="true"></section>
+
+    <div class="leave-overlay" id="leaveOverlay">
+      <div class="leave-card">
+        <div class="eyebrow">PT-10 → PT-11</div>
+        <h2>你离开后，她没有被暂停</h2>
+        <p id="leaveText">瑞丽丝会继续留在居所中。原型将模拟一段离线时间，并根据你们共同留下的物品产生变化。</p>
+        <div class="time-passed" id="timePassed">已过去 8 小时 17 分</div>
+        <button class="primary-btn" id="returnBtn">再次打开桌面</button>
+      </div>
+    </div>
+
+    <aside class="review-drawer" id="reviewDrawer">
+      <h3>原型评审面板</h3>
+      <p>这里展示当前状态、写入数据、进入条件与验收重点。用户正式体验中不出现。</p>
+      <div class="state-index" id="stateIndex"></div>
+      <section>
+        <div class="eyebrow">当前状态</div>
+        <h3 id="reviewState">PT-01</h3>
+        <p id="reviewGoal"></p>
+      </section>
+      <section>
+        <div class="eyebrow">状态写入</div>
+        <code id="reviewData">{}</code>
+      </section>
+      <section>
+        <div class="eyebrow">验收重点</div>
+        <ul id="reviewAcceptance"></ul>
+      </section>
+    </aside>
+
+    <div class="toast" id="toast"></div>
+    <div class="state-caption" id="stateCaption">原型状态：PT-01</div>
+  </main>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'ruilisi-p0-prototype-v071';
+      const LEGACY_STORAGE_KEYS = ['ruilisi-p0-prototype-v07', 'ruilisi-p0-prototype-v06-scenes', 'ruilisi-p0-prototype-v04', 'ruilisi-p0-prototype-v03'];
+      const defaultData = {
+        preferredName: '',
+        sharedObject: '',
+        firstDialogueChoice: '',
+        firstSharedChoiceAt: '',
+        leftAt: '',
+        returnCount: 0,
+        relationStage: 'R1',
+        observedSilently: false,
+        dailyMode: '',
+        chatHistory: [],
+        conversationMode: 'companion',
+        lastFreeMessage: '',
+        completedFirstLoop: false,
+        currentScene: 'moon-garden',
+        unlockedScenes: ['moon-garden'],
+        cloudEventReady: false,
+        visitedScenes: ['moon-garden'],
+        lastLifeState: 'LIFE',
+        previousState: 'LIFE',
+        previousScene: 'moon-garden',
+        previousCharacterState: 'LIFE',
+        previousActivity: '',
+        previousMotionLevel: 'natural',
+        characterState: 'LIFE',
+        currentActivity: '',
+        motionLevel: 'natural',
+        currentTask: null,
+        taskVersions: [],
+        taskVersionIndex: 0,
+        recentTasks: [],
+        focusGoal: '',
+        focusDuration: 25,
+        focusStatus: 'setup',
+        focusRemaining: 1500,
+        focusReflection: '',
+        currentState: 'PT-01'
+      };
+
+      let memory = loadMemory();
+      let state = 'PT-01';
+      let anchorTimer = null;
+      let toastTimer = null;
+      let voiceTimer = null;
+      let activeBackground = 'A';
+      let sceneTransitionLocked = false;
+      let queuedScene = '';
+      let sceneTransitionToken = 0;
+      let moonPetalTimer = null;
+      let plainLeafTimer = null;
+      let terminalLightTimer = null;
+      let activeMotionFactor = 1;
+      let taskTimers = [];
+      let focusTimer = null;
+      const reviewRequested = new URLSearchParams(location.search).get('review') === '1';
+      const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      const app = document.getElementById('app');
+      const sceneShell = document.getElementById('sceneShell');
+      const sceneBackgroundA = document.getElementById('sceneBackgroundA');
+      const sceneBackgroundB = document.getElementById('sceneBackgroundB');
+      const sceneAmbient = document.getElementById('sceneAmbient');
+      const moonAmbient = document.getElementById('moonAmbient');
+      const plainAmbient = document.getElementById('plainAmbient');
+      const terminalAmbient = document.getElementById('terminalAmbient');
+      const moonPetalLayer = document.getElementById('moonPetalLayer');
+      const plainLeafLayer = document.getElementById('plainLeafLayer');
+      const terminalDistantLightLayer = document.getElementById('terminalDistantLightLayer');
+      const scenePlaceBtn = document.getElementById('scenePlaceBtn');
+      const scenePicker = document.getElementById('scenePicker');
+      const scenePickerClose = document.getElementById('scenePickerClose');
+      const sceneChoices = document.getElementById('sceneChoices');
+      const sceneVisitLabel = document.getElementById('sceneVisitLabel');
+      const contentLayer = document.getElementById('contentLayer');
+      const characterWrap = document.getElementById('characterWrap');
+      const character = document.getElementById('character');
+      const objectAnchor = document.getElementById('objectAnchor');
+      const plantObject = document.getElementById('plantObject');
+      const playerObject = document.getElementById('playerObject');
+      const activityCard = document.getElementById('activityCard');
+      const activityTitle = document.getElementById('activityTitle');
+      const activityDesc = document.getElementById('activityDesc');
+      const modeBar = document.getElementById('modeBar');
+      const leaveOverlay = document.getElementById('leaveOverlay');
+      const returnBtn = document.getElementById('returnBtn');
+      const prototypeBadge = document.getElementById('prototypeBadge');
+      const memoryChip = document.getElementById('memoryChip');
+      const screenNote = document.getElementById('screenNote');
+      const toast = document.getElementById('toast');
+      const reviewDrawer = document.getElementById('reviewDrawer');
+      const reviewState = document.getElementById('reviewState');
+      const reviewGoal = document.getElementById('reviewGoal');
+      const reviewData = document.getElementById('reviewData');
+      const reviewAcceptance = document.getElementById('reviewAcceptance');
+      const stateIndex = document.getElementById('stateIndex');
+      const stateCaption = document.getElementById('stateCaption');
+      const contextMenu = document.getElementById('contextMenu');
+      const materialFileInput = document.getElementById('materialFileInput');
+      const taskPanel = document.getElementById('taskPanel');
+      const focusOverlay = document.getElementById('focusOverlay');
+      const moreMenu = document.getElementById('moreMenu');
+      const recentTaskCount = document.getElementById('recentTaskCount');
+      const motionSettingLabel = document.getElementById('motionSettingLabel');
+
+      app.classList.toggle('review-mode', reviewRequested);
+
+      const objectMeta = {
+        lamp: {
+          name: '漂浮灯',
+          memory: '窗边的第一盏灯',
+          response: '这里的光太冷了。这个颜色刚好。',
+          returnLine: '你回来了。昨晚它自己亮了一阵，我把那段光留了下来。',
+          change: '新增一段夜间亮灯记录'
+        },
+        plant: {
+          name: '深穹植物',
+          memory: '窗边的第一株植物',
+          response: '它对你的选择有反应。那就先放在窗边吧。',
+          returnLine: '你回来了。它刚才长出了一片新的叶子，我没敢乱碰。',
+          change: '长出一片新叶'
+        },
+        player: {
+          name: '旧式播放器',
+          memory: '一起留下的第一段声音',
+          response: '我不知道这段声音来自哪里，但它听起来很像“回家”。',
+          returnLine: '你回来得正好。我找到了一段你离开时没听过的声音。',
+          change: '新增一段播放记录'
+        }
+      };
+
+      const sceneMeta = {
+        'moon-garden': {
+          name: '月海花园',
+          role: '主场景 · 相遇与生活',
+          line: '月光落下来以后，世界终于安静。',
+          activity: '她正在月光下整理花枝',
+          dialogue: '这里是我们第一次留下共同痕迹的地方。'
+        },
+        'wind-plain': {
+          name: '风眠浮原',
+          role: '首个解锁 · 白昼共处',
+          line: '世界很大，但此刻不需要赶路。',
+          activity: '她正坐在树下看云慢慢移动',
+          dialogue: '今天的风很轻。什么都不做，也可以。'
+        },
+        'cloud-terminal': {
+          name: '云上列车终点站',
+          role: '事件场景 · 离开与归来',
+          line: '今天的旅途，到这里就可以停下了。',
+          activity: '她正在终点站等一段旅途安静结束',
+          dialogue: '这里不是每天都会来的地方。只有离开、归来，或者某段关系走到新的节点时，列车才会停靠。'
+        }
+      };
+
+      const sceneAssetMap = {
+        'moon-garden': './assets/scenes/moon-garden.webp',
+        'wind-plain': './assets/scenes/wind-plain.webp',
+        'cloud-terminal': './assets/scenes/cloud-terminal.webp'
+      };
+
+      const stateSpecs = {
+        'PT-01': {
+          title: '建立现实锚点',
+          goal: '首次启动只表达“连接正在建立”，不展示教程、权限或功能菜单。',
+          acceptance: ['3 秒内理解系统正在连接', '画面无输入框、无聊天助手感', '不可交互，避免用户误以为卡死']
+        },
+        'PT-02': {
+          title: '初次进入居所',
+          goal: '用户第一次看到瑞丽丝时，她正在做自己的事，而不是等候服务。',
+          acceptance: ['先看到行为，再看到台词', '角色不直视用户', '空间应像居所，不像登录页']
+        },
+        'PT-03': {
+          title: '瑞丽丝注意到用户',
+          goal: '由环境变化引发她的注意，建立第一次自然问候。',
+          acceptance: ['问候发生在角色行为之后', '没有“欢迎使用”措辞', '提供两条理解路径和自由对话感']
+        },
+        'PT-04': {
+          title: '初次交流',
+          goal: '用极短世界观信息建立名字、深穹与现实锚点。',
+          acceptance: ['不一次性讲世界观', '对话仍留在场景中', '不进入聊天列表界面']
+        },
+        'PT-05': {
+          title: '留下称呼',
+          goal: '建立第一次身份连接，但允许跳过。',
+          acceptance: ['不要求真实姓名', '可跳过', '称呼会在后续被自然使用']
+        },
+        'PT-06': {
+          title: '选择共同物品',
+          goal: '通过第一次共同决定建立可见、可记忆、可演化的空间痕迹。',
+          acceptance: ['三种物品含义不同', '不显示数值奖励', '用户理解选择会影响第二次回来']
+        },
+        'PT-07': {
+          title: '物品进入居所',
+          goal: '选择立即改变空间，并由瑞丽丝作出专属回应。',
+          acceptance: ['物品真实进入场景', '记录共同记忆', '不弹出“获得物品”奖励框']
+        },
+        'PT-08': {
+          title: '日常共处',
+          goal: '证明用户不必聊天也能和瑞丽丝共处。',
+          acceptance: ['观察、聊天、离开是三种不同体验', '角色有自主行为', '默认状态没有常驻大输入框']
+        },
+        'PT-09': {
+          title: '情境对话',
+          goal: '用户主动选择“聊聊”后，唤起底部轻量智能输入条，支持自由输入、语音入口与回应模式，同时保留场景主体。',
+          acceptance: ['输入条不遮挡人物与主要场景', '支持回车发送、语音入口与模式选择', '历史记录默认收起', '上下文与共同物品相关']
+        },
+        'PT-10': {
+          title: '用户离开',
+          goal: '用户离开时，瑞丽丝继续生活，不出现传统退出确认。',
+          acceptance: ['离开不是关闭角色生命', '写入离开时间与当前活动', '用户知道下次回来会有变化']
+        },
+        'PT-11': {
+          title: '第二次回来',
+          goal: '通过具体变化和具体记忆证明连续存在。',
+          acceptance: ['变化与首次选择直接相关', '瑞丽丝提到具体经历', '用户能复述“她记得上次发生过什么”']
+        },
+        'LIFE': {
+          title: '长期桌面 · 生活态',
+          goal: '场景与瑞丽丝常驻，功能入口保持轻量，用户默认无需操作。',
+          acceptance: ['无讲解型大面板', '场景与角色是视觉主体', '聊天、协作、专注均可一键进入']
+        },
+        'CHAT': {
+          title: '长期桌面 · 陪伴态',
+          goal: '用轻量输入条承载自由表达，不让聊天界面吞掉场景。',
+          acceptance: ['自由输入始终存在', '只有陪伴与协作两种前端状态', '关闭后准确返回生活态']
+        },
+        'ASSIST_INPUT': {
+          title: '协作 · 输入态',
+          goal: '明确任务、材料和必要确认，再开始处理。',
+          acceptance: ['任务材料可见', '只问必要问题', '开始处理动作明确']
+        },
+        'ASSIST_RUNNING': {
+          title: '协作 · 执行态',
+          goal: '只展示用户能理解的处理阶段，不泄露模型思维或技术日志。',
+          acceptance: ['最多三个步骤', '当前步骤明确', '不同时展示完整成果']
+        },
+        'ASSIST_RESULT': {
+          title: '协作 · 结果态',
+          goal: '成果成为视觉主体，材料和过程默认折叠，完成后任务层可退场。',
+          acceptance: ['成果不是聊天气泡', '一个主操作与最多三个次操作', '关闭后恢复此前生活状态']
+        },
+        'FOCUS_SETUP': {
+          title: '专注 · 设置',
+          goal: '设置这一轮唯一目标和时长。',
+          acceptance: ['设置轻量', '不做效率评分', '可随时退出并恢复']
+        },
+        'FOCUS_RUNNING': {
+          title: '专注 · 共处中',
+          goal: '用户与瑞丽丝共享一段安静工作时间，而不是被监督。',
+          acceptance: ['场景动效自动降档', '人物处于低干扰状态', '结束后进入轻量回顾']
+        },
+        'FOCUS_COMPLETE': {
+          title: '专注 · 完成',
+          goal: '只记录用户愿意留下的进展，并准确返回此前生活状态。',
+          acceptance: ['不显示效率分数', '可继续一轮或休息', '结束后准确恢复']
+        },
+        'SCENE_SWITCH': {
+          title: '场景选择',
+          goal: '用轻量抽屉完成三个场景之间的切换。',
+          acceptance: ['只显示三个场景', '当前场景明确', '选择后自动关闭并返回生活态']
+        }
+      };
+
+      const stateOrder = ['PT-01','PT-02','PT-03','PT-04','PT-05','PT-06','PT-07','PT-08','PT-09','PT-10','PT-11','LIFE','CHAT','ASSIST_INPUT','ASSIST_RUNNING','ASSIST_RESULT','FOCUS_SETUP','FOCUS_RUNNING','FOCUS_COMPLETE','SCENE_SWITCH'];
+
+      function loadMemory() {
+        try {
+          const legacyRaw = LEGACY_STORAGE_KEYS.map(key => localStorage.getItem(key)).find(Boolean);
+          const raw = localStorage.getItem(STORAGE_KEY) || legacyRaw || '{}';
+          const loaded = { ...defaultData, ...JSON.parse(raw) };
+          if (!Array.isArray(loaded.unlockedScenes)) loaded.unlockedScenes = ['moon-garden'];
+          if (!Array.isArray(loaded.visitedScenes)) loaded.visitedScenes = ['moon-garden'];
+          if (!Array.isArray(loaded.taskVersions)) loaded.taskVersions = [];
+          if (!Array.isArray(loaded.recentTasks)) loaded.recentTasks = [];
+          const knownScenes = ['moon-garden', 'wind-plain', 'cloud-terminal'];
+          if (!knownScenes.includes(loaded.currentScene)) loaded.currentScene = 'moon-garden';
+          const stateMigration = {
+            'DESKTOP-LIFE': 'LIFE',
+            'DESKTOP-CHAT': 'CHAT',
+            'DESKTOP-ASSIST': loaded.currentTask?.status === 'result' ? 'ASSIST_RESULT' : loaded.currentTask?.status === 'processing' ? 'ASSIST_RUNNING' : 'ASSIST_INPUT',
+            'DESKTOP-FOCUS': loaded.focusStatus === 'running' ? 'FOCUS_RUNNING' : loaded.focusStatus === 'review' ? 'FOCUS_COMPLETE' : 'FOCUS_SETUP'
+          };
+          loaded.lastLifeState = stateMigration[loaded.lastLifeState] || 'LIFE';
+          loaded.previousState = stateMigration[loaded.previousState] || loaded.previousState || 'LIFE';
+          if (!knownScenes.includes(loaded.previousScene)) loaded.previousScene = loaded.currentScene;
+          loaded.previousCharacterState = loaded.previousCharacterState || 'LIFE';
+          loaded.previousMotionLevel = loaded.previousMotionLevel || loaded.motionLevel || 'natural';
+          loaded.characterState = loaded.characterState || 'LIFE';
+          loaded.currentState = stateMigration[loaded.currentState] || loaded.currentState || (loaded.completedFirstLoop ? 'LIFE' : 'PT-01');
+          return loaded;
+        } catch {
+          return { ...defaultData };
+        }
+      }
+
+      function saveMemory() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(memory));
+      }
+
+      function resetMemory() {
+        localStorage.removeItem(STORAGE_KEY);
+        LEGACY_STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
+        memory = { ...defaultData };
+        state = 'PT-01';
+        memory.currentState = 'PT-01';
+        clearTaskTimers();
+        clearInterval(focusTimer);
+        leaveOverlay.classList.remove('visible');
+        closeTaskPanel(false);
+        focusOverlay.classList.add('hidden');
+        closeScenePicker();
+        applyScene('moon-garden', true);
+        render();
+        showToast('原型数据已重置');
+      }
+
+      function sceneIsUnlocked(sceneId) {
+        return memory.unlockedScenes.includes(sceneId) ||
+          (sceneId === 'cloud-terminal' && memory.cloudEventReady);
+      }
+
+      function unlockPostLoopScenes() {
+        if (!memory.unlockedScenes.includes('wind-plain')) memory.unlockedScenes.push('wind-plain');
+        memory.cloudEventReady = true;
+      }
+
+      function randomBetween(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function removeMoonPetal(petal) {
+        if (!petal) return;
+        if (petal.cleanupTimer) clearTimeout(petal.cleanupTimer);
+        petal.remove();
+      }
+
+      function clearMoonPetals() {
+        moonPetalLayer.querySelectorAll('.moon-petal').forEach(removeMoonPetal);
+      }
+
+      function stopMoonPetalGeneration() {
+        if (moonPetalTimer) clearTimeout(moonPetalTimer);
+        moonPetalTimer = null;
+        clearMoonPetals();
+      }
+
+      function createMoonPetals(force = false) {
+        const moonIsActive = app.dataset.theme === 'moon-garden' && sceneAmbient.classList.contains('active');
+        if ((!force && !moonIsActive) || reducedMotionQuery.matches || activeMotionFactor <= 0) return 0;
+        const availableSlots = Math.max(0, 4 - moonPetalLayer.childElementCount);
+        const requestedCount = Math.random() < .34 ? 2 : 1;
+        const count = Math.min(availableSlots, requestedCount);
+
+        for (let index = 0; index < count; index += 1) {
+          const petal = document.createElement('i');
+          const duration = randomBetween(9, 15.5);
+          petal.className = 'moon-petal';
+          petal.style.setProperty('--petal-start-y', `${randomBetween(15, 48).toFixed(1)}%`);
+          petal.style.setProperty('--petal-drift-y', `${randomBetween(12, 34).toFixed(1)}vh`);
+          petal.style.setProperty('--petal-size', `${randomBetween(11, 16).toFixed(1)}px`);
+          petal.style.setProperty('--petal-opacity', randomBetween(.52, .72).toFixed(2));
+          petal.style.setProperty('--petal-duration', `${duration.toFixed(2)}s`);
+          petal.style.setProperty('--petal-start-rotation', `${randomBetween(-25, 25).toFixed(0)}deg`);
+          petal.style.setProperty('--petal-end-rotation', `${randomBetween(70, 145).toFixed(0)}deg`);
+          petal.style.animationDelay = `${(index * randomBetween(.5, 1.4)).toFixed(2)}s`;
+          petal.addEventListener('animationend', () => removeMoonPetal(petal), { once: true });
+          petal.cleanupTimer = setTimeout(() => removeMoonPetal(petal), (duration + 2.5) * 1000);
+          moonPetalLayer.appendChild(petal);
+        }
+        return count;
+      }
+
+      function scheduleMoonPetalGeneration(initial = false) {
+        if (moonPetalTimer || reducedMotionQuery.matches || activeMotionFactor <= 0 || app.dataset.theme !== 'moon-garden') return;
+        const frequencyScale = 1 / Math.max(activeMotionFactor, .25);
+        const delay = (initial ? randomBetween(900, 1600) : randomBetween(14000, 26000)) * frequencyScale;
+        moonPetalTimer = setTimeout(() => {
+          moonPetalTimer = null;
+          if (app.dataset.theme === 'moon-garden' && activeMotionFactor > 0 && !reducedMotionQuery.matches) {
+            createMoonPetals();
+            scheduleMoonPetalGeneration(false);
+          }
+        }, delay);
+      }
+
+      function removePlainLeaf(leaf) {
+        if (!leaf) return;
+        if (leaf.cleanupTimer) clearTimeout(leaf.cleanupTimer);
+        leaf.remove();
+      }
+
+      function clearPlainLeaves() {
+        plainLeafLayer.querySelectorAll('.plain-leaf').forEach(removePlainLeaf);
+      }
+
+      function stopPlainLeafGeneration() {
+        if (plainLeafTimer) clearTimeout(plainLeafTimer);
+        plainLeafTimer = null;
+        clearPlainLeaves();
+      }
+
+      function createPlainLeaves(force = false) {
+        const plainIsActive = app.dataset.theme === 'wind-plain' && plainAmbient.classList.contains('active');
+        if ((!force && !plainIsActive) || reducedMotionQuery.matches || activeMotionFactor <= 0) return 0;
+        const availableSlots = Math.max(0, 3 - plainLeafLayer.childElementCount);
+        const requestedCount = Math.random() < .12 ? 2 : 1;
+        const count = Math.min(availableSlots, requestedCount);
+
+        for (let index = 0; index < count; index += 1) {
+          const leaf = document.createElement('i');
+          const duration = randomBetween(10, 17.5);
+          leaf.className = 'plain-leaf';
+          leaf.style.setProperty('--leaf-start-y', `${randomBetween(10, 43).toFixed(1)}%`);
+          leaf.style.setProperty('--leaf-drift-y', `${randomBetween(12, 30).toFixed(1)}vh`);
+          leaf.style.setProperty('--leaf-size', `${randomBetween(13, 20).toFixed(1)}px`);
+          leaf.style.setProperty('--leaf-opacity', randomBetween(.46, .66).toFixed(2));
+          leaf.style.setProperty('--leaf-duration', `${duration.toFixed(2)}s`);
+          leaf.style.setProperty('--leaf-start-rotation', `${randomBetween(-32, 18).toFixed(0)}deg`);
+          leaf.style.setProperty('--leaf-end-rotation', `${randomBetween(48, 105).toFixed(0)}deg`);
+          leaf.style.animationDelay = `${(index * randomBetween(.7, 1.6)).toFixed(2)}s`;
+          leaf.addEventListener('animationend', () => removePlainLeaf(leaf), { once: true });
+          leaf.cleanupTimer = setTimeout(() => removePlainLeaf(leaf), (duration + 2.5) * 1000);
+          plainLeafLayer.appendChild(leaf);
+        }
+        return count;
+      }
+
+      function schedulePlainLeafGeneration(initial = false) {
+        if (plainLeafTimer || reducedMotionQuery.matches || activeMotionFactor <= 0 || app.dataset.theme !== 'wind-plain') return;
+        const frequencyScale = 1 / Math.max(activeMotionFactor, .25);
+        const delay = (initial ? randomBetween(1000, 1800) : randomBetween(18000, 36000)) * frequencyScale;
+        plainLeafTimer = setTimeout(() => {
+          plainLeafTimer = null;
+          if (app.dataset.theme === 'wind-plain' && activeMotionFactor > 0 && !reducedMotionQuery.matches) {
+            createPlainLeaves();
+            schedulePlainLeafGeneration(false);
+          }
+        }, delay);
+      }
+
+      function removeTerminalLight(light) {
+        if (!light) return;
+        if (light.cleanupTimer) clearTimeout(light.cleanupTimer);
+        light.remove();
+      }
+
+      function clearTerminalLights() {
+        terminalDistantLightLayer.querySelectorAll('.terminal-distant-light').forEach(removeTerminalLight);
+      }
+
+      function stopTerminalLightGeneration() {
+        if (terminalLightTimer) clearTimeout(terminalLightTimer);
+        terminalLightTimer = null;
+        clearTerminalLights();
+      }
+
+      function createTerminalDistantLight(force = false) {
+        const terminalIsActive = app.dataset.theme === 'cloud-terminal' && terminalAmbient.classList.contains('active');
+        if ((!force && !terminalIsActive) || reducedMotionQuery.matches || activeMotionFactor <= 0 || terminalDistantLightLayer.childElementCount >= 1) return 0;
+        const light = document.createElement('i');
+        const duration = randomBetween(7, 13.5);
+        light.className = 'terminal-distant-light';
+        light.style.setProperty('--signal-start-x', `${randomBetween(56, 75).toFixed(1)}%`);
+        light.style.setProperty('--signal-start-y', `${randomBetween(52, 66).toFixed(1)}%`);
+        light.style.setProperty('--signal-drift-x', `${randomBetween(54, 92).toFixed(0)}px`);
+        light.style.setProperty('--signal-drift-y', `${randomBetween(-18, -7).toFixed(0)}px`);
+        light.style.setProperty('--signal-duration', `${duration.toFixed(2)}s`);
+        light.addEventListener('animationend', () => removeTerminalLight(light), { once: true });
+        light.cleanupTimer = setTimeout(() => removeTerminalLight(light), (duration + 2) * 1000);
+        terminalDistantLightLayer.appendChild(light);
+        return 1;
+      }
+
+      function scheduleTerminalLightGeneration(initial = false) {
+        if (terminalLightTimer || reducedMotionQuery.matches || activeMotionFactor <= 0 || app.dataset.theme !== 'cloud-terminal') return;
+        const frequencyScale = 1 / Math.max(activeMotionFactor, .25);
+        const delay = (initial ? randomBetween(1200, 2200) : randomBetween(22000, 42000)) * frequencyScale;
+        terminalLightTimer = setTimeout(() => {
+          terminalLightTimer = null;
+          if (app.dataset.theme === 'cloud-terminal' && activeMotionFactor > 0 && !reducedMotionQuery.matches) {
+            createTerminalDistantLight();
+            scheduleTerminalLightGeneration(false);
+          }
+        }, delay);
+      }
+
+      const ambientGroups = {
+        'moon-garden': moonAmbient,
+        'wind-plain': plainAmbient,
+        'cloud-terminal': terminalAmbient
+      };
+
+      function stopAllAmbientParticles() {
+        stopMoonPetalGeneration();
+        stopPlainLeafGeneration();
+        stopTerminalLightGeneration();
+      }
+
+      function syncSceneAmbient(sceneId = app.dataset.theme || 'moon-garden') {
+        const ambientIsActive = Boolean(ambientGroups[sceneId]) && activeMotionFactor > 0;
+        sceneAmbient.classList.toggle('active', ambientIsActive);
+        sceneAmbient.classList.toggle('motion-paused', activeMotionFactor <= 0);
+        app.dataset.reducedMotion = reducedMotionQuery.matches ? 'true' : 'false';
+
+        Object.entries(ambientGroups).forEach(([groupScene, group]) => {
+          group.classList.toggle('active', ambientIsActive && groupScene === sceneId);
+        });
+
+        stopAllAmbientParticles();
+
+        if (!ambientIsActive || reducedMotionQuery.matches) return;
+        if (sceneId === 'moon-garden') scheduleMoonPetalGeneration(true);
+        if (sceneId === 'wind-plain') schedulePlainLeafGeneration(true);
+        if (sceneId === 'cloud-terminal') scheduleTerminalLightGeneration(true);
+      }
+
+      function setMotionFactor(value = 1) {
+        const parsed = Number(value);
+        activeMotionFactor = Number.isFinite(parsed) ? Math.min(1, Math.max(0, parsed)) : 1;
+        app.style.setProperty('--motion-factor', String(activeMotionFactor));
+        app.dataset.motionFactor = String(activeMotionFactor);
+        syncSceneAmbient(app.dataset.theme || 'moon-garden');
+        return activeMotionFactor;
+      }
+
+      function handleReducedMotionChange() {
+        syncSceneAmbient(app.dataset.theme || 'moon-garden');
+      }
+
+      if (typeof reducedMotionQuery.addEventListener === 'function') reducedMotionQuery.addEventListener('change', handleReducedMotionChange);
+      else reducedMotionQuery.addListener(handleReducedMotionChange);
+
+      window.__ruilisiAmbient = {
+        setMotionFactor,
+        spawnPetalForTest: () => createMoonPetals(true),
+        spawnLeafForTest: () => createPlainLeaves(true),
+        spawnTerminalLightForTest: () => createTerminalDistantLight(true),
+        getDebugState: () => ({
+          scene: app.dataset.theme,
+          factor: activeMotionFactor,
+          reducedMotion: reducedMotionQuery.matches,
+          containerCount: document.querySelectorAll('#sceneAmbient').length,
+          petalCount: moonPetalLayer.childElementCount,
+          timerActive: Boolean(moonPetalTimer),
+          leafCount: plainLeafLayer.childElementCount,
+          terminalLightCount: terminalDistantLightLayer.childElementCount,
+          timers: {
+            moon: Boolean(moonPetalTimer),
+            plain: Boolean(plainLeafTimer),
+            terminal: Boolean(terminalLightTimer)
+          },
+          activeGroups: [...sceneAmbient.querySelectorAll('.scene-ambient-group.active')].map(group => group.dataset.ambientScene),
+          active: sceneAmbient.classList.contains('active')
+        })
+      };
+
+      function applySceneTheme(sceneId) {
+        const theme = sceneMeta[sceneId] ? sceneId : 'moon-garden';
+        app.dataset.theme = theme;
+        sceneShell.dataset.scene = theme;
+        syncSceneAmbient(theme);
+      }
+
+      function preloadScene(sceneId) {
+        return new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(sceneId);
+          image.onerror = () => reject(new Error(`Scene asset failed to load: ${sceneId}`));
+          image.src = sceneAssetMap[sceneId];
+          if (image.complete && image.naturalWidth > 0) resolve(sceneId);
+        });
+      }
+
+      function waitForSceneFrame(duration) {
+        return new Promise(resolve => setTimeout(resolve, duration));
+      }
+
+      async function applyScene(sceneId, immediate = false) {
+        const nextScene = sceneMeta[sceneId] ? sceneId : 'moon-garden';
+        const currentLayer = activeBackground === 'A' ? sceneBackgroundA : sceneBackgroundB;
+        const nextLayer = activeBackground === 'A' ? sceneBackgroundB : sceneBackgroundA;
+
+        if (immediate) {
+          sceneTransitionToken += 1;
+          sceneTransitionLocked = false;
+          queuedScene = '';
+          nextLayer.dataset.scene = nextScene;
+          currentLayer.classList.remove('visible');
+          nextLayer.classList.add('visible');
+          activeBackground = activeBackground === 'A' ? 'B' : 'A';
+          applySceneTheme(nextScene);
+          updateSceneChrome();
+          return true;
+        }
+
+        if (sceneTransitionLocked) {
+          queuedScene = nextScene;
+          return false;
+        }
+
+        if (currentLayer.dataset.scene === nextScene && currentLayer.classList.contains('visible')) {
+          applySceneTheme(nextScene);
+          updateSceneChrome();
+          return true;
+        }
+
+        const transitionToken = ++sceneTransitionToken;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const duration = reducedMotion ? 120 : 820;
+        const themeDelay = Math.round(duration * .52);
+        sceneTransitionLocked = true;
+        app.classList.add('scene-transitioning');
+        app.style.setProperty('--scene-transition-duration', `${duration}ms`);
+        scenePicker.setAttribute('aria-busy', 'true');
+
+        try {
+          await preloadScene(nextScene);
+          if (transitionToken !== sceneTransitionToken) return false;
+
+          nextLayer.dataset.scene = nextScene;
+          nextLayer.getBoundingClientRect();
+          requestAnimationFrame(() => {
+            nextLayer.classList.add('visible');
+            currentLayer.classList.remove('visible');
+          });
+
+          await waitForSceneFrame(themeDelay);
+          if (transitionToken !== sceneTransitionToken) return false;
+          applySceneTheme(nextScene);
+          updateSceneChrome();
+
+          await waitForSceneFrame(duration - themeDelay);
+          if (transitionToken !== sceneTransitionToken) return false;
+          currentLayer.classList.remove('visible');
+          activeBackground = activeBackground === 'A' ? 'B' : 'A';
+          return true;
+        } catch (error) {
+          console.error(error);
+          showToast('场景暂时无法载入，请稍后再试。');
+          return false;
+        } finally {
+          if (transitionToken === sceneTransitionToken) {
+            sceneTransitionLocked = false;
+            app.classList.remove('scene-transitioning');
+            scenePicker.removeAttribute('aria-busy');
+            const pendingScene = queuedScene;
+            queuedScene = '';
+            if (pendingScene && pendingScene !== nextScene) applyScene(pendingScene);
+          }
+        }
+      }
+
+      function updateSceneChrome() {
+        const sceneId = memory.currentScene || 'moon-garden';
+        const meta = sceneMeta[sceneId];
+        scenePlaceBtn.textContent = meta.name;
+        scenePlaceBtn.classList.add('hidden');
+        sceneVisitLabel.classList.toggle('hidden', sceneId === 'moon-garden' || !memory.completedFirstLoop);
+        sceneVisitLabel.innerHTML = sceneId === 'moon-garden'
+          ? ''
+          : `<strong>${meta.name}</strong>${meta.line}`;
+        renderSceneChoices();
+      }
+
+      function renderSceneChoices() {
+        sceneChoices.innerHTML = Object.entries(sceneMeta).map(([sceneId, meta]) => {
+          const unlocked = sceneIsUnlocked(sceneId);
+          const current = memory.currentScene === sceneId;
+          const status = current ? '当前' : unlocked ? '前往' : '待开放';
+          return `
+            <button class="scene-choice${current ? ' current' : ''}${unlocked ? '' : ' locked'}"
+              type="button" data-scene="${sceneId}" ${unlocked ? '' : 'disabled'}>
+              <span class="scene-thumb"></span>
+              <span><strong>${meta.name}</strong>${meta.line}</span>
+              <em>${status}</em>
+            </button>`;
+        }).join('');
+      }
+
+      function openScenePicker() {
+        clearTimeout(toastTimer);
+        toast.classList.remove('visible');
+        if (!memory.completedFirstLoop) {
+          showToast('完成第一次归来后，瑞丽丝的世界才会向外展开。');
+          return;
+        }
+        if (state === 'LIFE' || state === 'PT-08') savePreviousLifeState();
+        else {
+          memory.previousState = 'LIFE';
+          memory.previousScene = memory.currentScene;
+          memory.previousCharacterState = memory.characterState || 'LIFE';
+          memory.previousActivity = memory.currentActivity || '';
+          memory.previousMotionLevel = memory.motionLevel || 'natural';
+          saveMemory();
+        }
+        closeMoreMenu();
+        go('SCENE_SWITCH');
+      }
+
+      function closeScenePicker() {
+        scenePicker.classList.remove('open');
+        scenePicker.setAttribute('aria-hidden', 'true');
+      }
+
+      async function visitScene(sceneId) {
+        if (sceneTransitionLocked) return;
+        if (!sceneIsUnlocked(sceneId)) {
+          showToast('这个地点还没有进入你们的共同生活。');
+          return;
+        }
+        memory.currentScene = sceneId;
+        memory.characterState = 'LIFE';
+        memory.currentActivity = sceneMeta[sceneId].activity;
+        if (!memory.visitedScenes.includes(sceneId)) memory.visitedScenes.push(sceneId);
+        saveMemory();
+        closeScenePicker();
+        const switched = await applyScene(sceneId);
+        if (switched) go('LIFE');
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('visible'), 2200);
+      }
+
+      function panel({ className = 'story-panel', eyebrow = '', title = '', body = '', dialogue = '', actions = '' }) {
+        return `
+          <div class="panel ${className}">
+            ${eyebrow ? `<div class="eyebrow">${eyebrow}</div>` : ''}
+            ${title ? `<h1>${title}</h1>` : ''}
+            ${body ? `<p>${body}</p>` : ''}
+            ${dialogue ? `<div class="dialogue">${dialogue}</div>` : ''}
+            ${actions ? `<div class="actions">${actions}</div>` : ''}
+          </div>`;
+      }
+
+      function btn(label, action, kind = 'soft-btn') {
+        return `<button class="${kind}" data-action="${action}">${label}</button>`;
+      }
+
+      function configureDock(longTerm = false, activeMode = '') {
+        const active = mode => activeMode === mode ? ' active' : '';
+        modeBar.innerHTML = longTerm
+          ? `<button class="${active('talk').trim()}" data-mode="talk">聊聊</button><button class="assist-entry${active('assist')}" data-mode="assist">帮我一下</button><button class="${active('focus').trim()}" data-mode="focus">一起专注</button><button class="${active('more').trim()}" data-mode="more" aria-label="更多">更多</button>`
+          : `<button data-mode="talk">聊聊</button><button data-mode="leave">暂时离开</button>`;
+      }
+
+      function setDockActive(activeMode = '') {
+        modeBar.querySelectorAll('button[data-mode]').forEach(button => button.classList.toggle('active', button.dataset.mode === activeMode));
+      }
+
+      function setCharacter({ pos = 'center', pose = '', faded = false } = {}) {
+        characterWrap.className = `character-wrap ${pos}${faded ? ' fade' : ''}`;
+        character.className = `character ${pose}`;
+      }
+
+      function characterLayoutFor(mode = 'LIFE') {
+        if (mode === 'CHAT') return { pos: 'working', pose: 'greeting' };
+        if (mode === 'ASSIST') return { pos: 'working', pose: 'reading' };
+        if (mode === 'FOCUS') return { pos: 'seated', pose: 'reading' };
+        return { pos: memory.currentScene === 'wind-plain' ? 'seated' : 'working', pose: 'reading' };
+      }
+
+      function applyCharacterState(mode = 'LIFE') {
+        memory.characterState = mode;
+        app.dataset.characterState = mode;
+        setCharacter(characterLayoutFor(mode));
+      }
+
+      function savePreviousLifeState(returnState = state === 'PT-08' ? 'PT-08' : 'LIFE') {
+        if (state !== 'LIFE' && state !== 'PT-08') return;
+        memory.previousState = returnState;
+        memory.previousScene = memory.currentScene;
+        memory.previousCharacterState = memory.characterState || 'LIFE';
+        memory.previousActivity = memory.currentActivity || '';
+        memory.previousMotionLevel = memory.motionLevel || 'natural';
+        saveMemory();
+      }
+
+      function restorePreviousLifeState() {
+        memory.currentScene = sceneMeta[memory.previousScene] ? memory.previousScene : memory.currentScene;
+        memory.characterState = memory.previousCharacterState || 'LIFE';
+        memory.currentActivity = memory.previousActivity || '';
+        memory.motionLevel = memory.previousMotionLevel || 'natural';
+        memory.conversationMode = 'companion';
+        const returnState = memory.previousState === 'PT-08' && !memory.completedFirstLoop ? 'PT-08' : 'LIFE';
+        saveMemory();
+        go(returnState);
+      }
+
+      function openMoreMenu() {
+        const latest = memory.recentTasks?.[0];
+        recentTaskCount.textContent = latest ? '1 项' : '暂无';
+        motionSettingLabel.textContent = `动效：${memory.motionLevel === 'paused' ? '暂停' : memory.motionLevel === 'focus' ? '安静' : '自然'}`;
+        moreMenu.classList.add('open');
+        moreMenu.setAttribute('aria-hidden', 'false');
+        setDockActive('more');
+      }
+
+      function closeMoreMenu() {
+        moreMenu.classList.remove('open');
+        moreMenu.setAttribute('aria-hidden', 'true');
+        if (state === 'LIFE' || state === 'PT-08') setDockActive('');
+      }
+
+      function hideSharedUI() {
+        contentLayer.innerHTML = '';
+        modeBar.classList.add('hidden');
+        activityCard.classList.add('hidden');
+        activityCard.classList.remove('life-hint');
+        memoryChip.classList.remove('visible');
+        screenNote.textContent = '';
+        sceneVisitLabel.classList.add('hidden');
+        contextMenu.classList.add('hidden');
+        contextMenu.setAttribute('aria-hidden', 'true');
+        closeMoreMenu();
+        taskPanel.classList.remove('open');
+        taskPanel.setAttribute('aria-hidden', 'true');
+        focusOverlay.classList.add('hidden');
+        focusOverlay.setAttribute('aria-hidden', 'true');
+        clearTimeout(anchorTimer);
+      }
+
+      function setObject(object, { grown = false, playing = false } = {}) {
+        if (!object) {
+          objectAnchor.dataset.object = '';
+          objectAnchor.classList.remove('visible');
+          plantObject.classList.remove('grown');
+          playerObject.classList.remove('playing');
+          return;
+        }
+        objectAnchor.dataset.object = object;
+        objectAnchor.classList.add('visible');
+        plantObject.classList.toggle('grown', grown);
+        playerObject.classList.toggle('playing', playing);
+      }
+
+      function go(next) {
+        state = next;
+        memory.currentState = next;
+        saveMemory();
+        render();
+      }
+
+      function updateReview() {
+        const spec = stateSpecs[state] || stateSpecs['LIFE'];
+        prototypeBadge.textContent = `${state} · ${spec.title}`;
+        stateCaption.textContent = `原型状态：${state}`;
+        reviewState.textContent = `${state} · ${spec.title}`;
+        reviewGoal.textContent = spec.goal;
+        reviewData.textContent = JSON.stringify(memory, null, 2);
+        reviewAcceptance.innerHTML = spec.acceptance.map(x => `<li>${x}</li>`).join('');
+        [...stateIndex.children].forEach(b => b.classList.toggle('active', b.dataset.state === state));
+      }
+
+      function buildStateIndex() {
+        const shortState = s => s.startsWith('PT-') ? s.replace('PT-','') : s.replace('ASSIST_','A-').replace('FOCUS_','F-').replace('SCENE_SWITCH','SCENE');
+        stateIndex.innerHTML = stateOrder.map(s => `<button data-state="${s}">${shortState(s)}</button>`).join('');
+        stateIndex.addEventListener('click', e => {
+          const b = e.target.closest('button[data-state]');
+          if (!b) return;
+          state = b.dataset.state;
+          leaveOverlay.classList.remove('visible');
+          render();
+        });
+      }
+
+      function render() {
+        hideSharedUI();
+        sceneShell.dataset.state = state;
+        const desktopState = state.startsWith('ASSIST_') ? 'assist' : state.startsWith('FOCUS_') ? 'focus' : state === 'CHAT' || state === 'PT-09' ? 'chat' : 'life';
+        app.dataset.desktopState = desktopState;
+        app.dataset.characterState = desktopState === 'assist' ? 'ASSIST' : desktopState === 'focus' ? 'FOCUS' : desktopState === 'chat' ? 'CHAT' : 'LIFE';
+        app.dataset.motion = desktopState === 'assist' || desktopState === 'focus' ? 'focus' : (memory.motionLevel || 'natural');
+        if (!memory.completedFirstLoop) memory.currentScene = 'moon-garden';
+        applyScene(memory.currentScene || 'moon-garden');
+        updateReview();
+
+        const object = memory.sharedObject || 'plant';
+        const name = memory.preferredName || '你';
+
+        if (state === 'PT-01') {
+          setObject('');
+          setCharacter({ pos: 'center', faded: true });
+          contentLayer.innerHTML = `
+            <div class="anchor-progress">
+              <div class="anchor-ring"></div>
+              <h2>正在建立现实锚点…</h2>
+              <p>检测到稳定的深穹回声</p>
+              <div class="progress-track"><div class="progress-bar"></div></div>
+            </div>`;
+          screenNote.textContent = '首次启动不申请语音、屏幕、开机启动等权限。';
+          anchorTimer = setTimeout(() => go('PT-02'), 3400);
+        }
+
+        if (state === 'PT-02') {
+          setObject('');
+          setCharacter({ pos: 'right', pose: 'reading' });
+          activityCard.classList.remove('hidden');
+          activityCard.classList.add('life-hint');
+          activityTitle.textContent = '她正在整理一册漂浮记录';
+          activityDesc.textContent = '她还没有注意到你。';
+          contentLayer.innerHTML = '';
+          anchorTimer = setTimeout(() => go('PT-03'), 3000);
+        }
+
+        if (state === 'PT-03') {
+          setObject('');
+          setCharacter({ pos: 'right', pose: 'greeting' });
+          contentLayer.innerHTML = panel({
+            className: 'dialogue-panel compact',
+            eyebrow: '瑞丽丝',
+            dialogue: '连接成功了。看来，我暂时会住在这里。',
+            actions:
+              btn('你是谁？', 'ask-who') +
+              btn('这里是什么地方？', 'ask-place') +
+              btn('先看看她', 'observe-first', 'ghost-btn')
+          });
+          screenNote.textContent = '她不是“启动后等待命令”，而是从自己的活动中注意到了你。';
+        }
+
+        if (state === 'PT-04') {
+          setObject('');
+          setCharacter({ pos: 'right' });
+          contentLayer.innerHTML = panel({
+            className: 'dialogue-panel compact',
+            eyebrow: '瑞丽丝',
+            dialogue: `我叫瑞丽丝。至于我从哪里来……我只记得一个名字，深穹。<br>这里似乎是我和现实连接最稳定的地方。`,
+            actions: btn('继续', 'to-name', 'primary-btn')
+          });
+          screenNote.textContent = `用户选择：${memory.firstDialogueChoice || '未记录'}。只提供最小世界观信息。`;
+        }
+
+        if (state === 'PT-05') {
+          setObject('');
+          setCharacter({ pos: 'right' });
+          contentLayer.innerHTML = `
+            <div class="panel dialogue-panel compact">
+              <div class="eyebrow">瑞丽丝</div>
+              <div class="dialogue">我该怎么称呼你？不一定是真名。</div>
+              <div class="input-row">
+                <input id="nameInput" maxlength="12" placeholder="留下一个称呼" value="${escapeHtml(memory.preferredName)}" />
+                <button class="primary-btn" data-action="save-name">确认</button>
+              </div>
+              <div class="actions">
+                <button class="ghost-btn" data-action="skip-name">暂时不说</button>
+              </div>
+            </div>`;
+          screenNote.textContent = '称呼可跳过，不强迫用户暴露真实身份。';
+          setTimeout(() => document.getElementById('nameInput')?.focus(), 120);
+        }
+
+        if (state === 'PT-06') {
+          setObject('');
+          setCharacter({ pos: 'right' });
+          contentLayer.innerHTML = `
+            <div class="panel story-panel">
+              <div class="eyebrow">第一次共同决定</div>
+              <h2>这里还空着一小块地方。</h2>
+              <p>${name}，你想先留下什么？这个选择会永久留在居所，并影响你下一次回来。</p>
+            </div>
+            <div class="object-selection">
+              ${objectCard('lamp', '漂浮灯', '柔和照亮夜晚，并记录她独处时的光。', '留下温度')}
+              ${objectCard('plant', '深穹植物', '会随离线时间生长，留下最直观的时间痕迹。', '留下生命')}
+              ${objectCard('player', '旧式播放器', '保存你们共同听过的声音，并产生播放记录。', '留下声音')}
+            </div>`;
+          screenNote.textContent = '不出现稀有度、好感度、金币或奖励标签。';
+        }
+
+        if (state === 'PT-07') {
+          setCharacter({ pos: 'right' });
+          setObject(object);
+          const meta = objectMeta[object];
+          contentLayer.innerHTML = panel({
+            className: 'dialogue-panel compact',
+            eyebrow: '瑞丽丝',
+            dialogue: meta.response,
+            actions: btn('让她继续熟悉这里', 'to-daily', 'primary-btn')
+          });
+          memoryChip.textContent = `共同记忆 · ${meta.memory}`;
+          memoryChip.classList.add('visible');
+          screenNote.textContent = `已写入 shared_object=${object} 与 first_shared_choice。`;
+        }
+
+        if (state === 'PT-08') {
+          setObject(object);
+          memory.characterState = 'LIFE';
+          app.dataset.characterState = 'LIFE';
+          applyCharacterState('LIFE');
+          activityCard.classList.remove('hidden');
+          activityCard.classList.add('life-hint');
+          memory.currentActivity = object === 'player' ? '她正在重听一段陌生旋律' : object === 'lamp' ? '她正在调试窗边的光' : '她正在观察植物的叶脉';
+          activityTitle.textContent = memory.currentActivity;
+          activityDesc.textContent = '你可以靠近，也可以各做各的。';
+          configureDock(true);
+          modeBar.classList.remove('hidden');
+          contentLayer.innerHTML = '';
+          screenNote.textContent = '默认即为安静共处；聊天、协作和专注都只是按需出现的临时层。';
+        }
+
+        if (state === 'PT-09') {
+          setObject(memory.currentScene === 'moon-garden' ? object : '');
+          applyCharacterState('CHAT');
+          activityCard.classList.remove('hidden');
+          activityTitle.textContent = memory.currentScene === 'moon-garden'
+            ? '她仍在做自己的事'
+            : sceneMeta[memory.currentScene].activity;
+          activityDesc.textContent = memory.currentScene === 'moon-garden'
+            ? '轻量输入条被唤起，但场景、活动和共同物品仍然是视觉主体。'
+            : `${sceneMeta[memory.currentScene].role}。对话会感知当前地点，但不会把场景退化成聊天背景。`;
+          contentLayer.innerHTML = renderChatPanel(object);
+          screenNote.textContent = '输入条参考主流模型对话结构，但只保留自由输入、语音、回应模式与发送；关闭后回到纯居住态。';
+          bindChatInput();
+        }
+
+        if (state === 'PT-10') {
+          setObject(object);
+          setCharacter({ pos: 'working', pose: object === 'player' ? '' : 'reading' });
+          contentLayer.innerHTML = panel({
+            className: 'dialogue-panel compact',
+            eyebrow: '瑞丽丝',
+            dialogue: object === 'plant'
+              ? '你去忙吧。我再看看它。下次回来，也许会有变化。'
+              : object === 'lamp'
+              ? '不用担心这里。光会替你记住这段时间。'
+              : '我想再听一遍。你下次回来时，我告诉你听见了什么。',
+            actions: btn('暂时离开桌面', 'confirm-leave', 'primary-btn') + btn('再待一会儿', 'back-daily', 'ghost-btn')
+          });
+          screenNote.textContent = '离开不是“关闭她”，而是让共同世界进入有限离线演化。';
+        }
+
+        if (state === 'PT-11') {
+          memory.returnCount = Math.max(1, memory.returnCount);
+          memory.relationStage = 'R2';
+          memory.completedFirstLoop = true;
+          unlockPostLoopScenes();
+          saveMemory();
+          setObject(object, { grown: object === 'plant', playing: object === 'player' });
+          setCharacter({ pos: 'seated', pose: object === 'player' ? '' : 'greeting' });
+          const meta = objectMeta[object];
+          if (memory.currentScene === 'moon-garden') {
+            contentLayer.innerHTML = panel({
+              className: 'dialogue-panel compact',
+              eyebrow: '瑞丽丝',
+              dialogue: `${name !== '你' ? name + '，' : ''}${meta.returnLine}`,
+              actions:
+                btn('看看发生了什么', 'inspect-change', 'primary-btn') +
+                btn('回到她身边', 'enter-desktop', 'soft-btn') +
+                btn('看看新开放的地方', 'open-scenes', 'ghost-btn')
+            });
+            memoryChip.textContent = `新的变化 · ${meta.change}`;
+            memoryChip.classList.add('visible');
+            screenNote.textContent = '关系由 R1 → R2。风眠浮原现已开放；云上列车作为离开与归来的事件场景被激活。';
+          } else {
+            const scene = sceneMeta[memory.currentScene];
+            setObject('');
+            setCharacter({ pos: memory.currentScene === 'wind-plain' ? 'seated' : 'working', pose: 'reading' });
+            activityCard.classList.remove('hidden');
+            activityTitle.textContent = scene.activity;
+            activityDesc.textContent = scene.role;
+            contentLayer.innerHTML = panel({
+              className: 'dialogue-panel compact',
+              eyebrow: scene.name,
+              dialogue: scene.dialogue,
+              actions:
+                btn('在这里安静待一会儿', 'scene-observe', 'soft-btn') +
+                btn('聊聊', 'scene-talk', 'primary-btn') +
+                btn('回月海花园', 'return-moon', 'ghost-btn')
+            });
+            sceneVisitLabel.classList.remove('hidden');
+            sceneVisitLabel.innerHTML = `<strong>${scene.name}</strong>${scene.line}`;
+            screenNote.textContent = memory.currentScene === 'cloud-terminal'
+              ? '事件场景：只在离开、归来或关系节点出现，不作为日常随机壁纸。'
+              : '首个解锁场景：用于白昼、阅读与低打扰共处。';
+          }
+          updateSceneChrome();
+        }
+
+        if (state === 'LIFE') {
+          memory.completedFirstLoop = true;
+          memory.lastLifeState = 'LIFE';
+          memory.characterState = 'LIFE';
+          setObject(memory.currentScene === 'moon-garden' ? object : '');
+          applyCharacterState('LIFE');
+          activityCard.classList.remove('hidden');
+          activityCard.classList.add('life-hint');
+          const defaultActivity = memory.currentScene === 'moon-garden'
+            ? (object === 'player' ? '她正在重听那段旋律' : object === 'lamp' ? '她在调试窗边的光' : '她在看新叶慢慢舒展')
+            : sceneMeta[memory.currentScene].activity;
+          memory.currentActivity = memory.currentActivity || defaultActivity;
+          activityTitle.textContent = memory.currentActivity;
+          activityDesc.textContent = sceneMeta[memory.currentScene].line;
+          configureDock(true);
+          modeBar.classList.remove('hidden');
+          contentLayer.innerHTML = '';
+          updateSceneChrome();
+          saveMemory();
+        }
+
+        if (state === 'CHAT') {
+          setObject(memory.currentScene === 'moon-garden' ? object : '');
+          applyCharacterState('CHAT');
+          configureDock(true, 'talk');
+          modeBar.classList.remove('hidden');
+          contentLayer.innerHTML = renderChatPanel(object);
+          bindChatInput();
+        }
+
+        if (state.startsWith('ASSIST_')) {
+          setObject(memory.currentScene === 'moon-garden' ? object : '');
+          applyCharacterState('ASSIST');
+          configureDock(true, 'assist');
+          modeBar.classList.remove('hidden');
+          renderTaskPanel();
+        }
+
+        if (state.startsWith('FOCUS_')) {
+          setObject(memory.currentScene === 'moon-garden' ? object : '');
+          applyCharacterState('FOCUS');
+          configureDock(true, 'focus');
+          modeBar.classList.remove('hidden');
+          renderFocusPanel();
+        }
+
+        if (state === 'SCENE_SWITCH') {
+          setObject(memory.currentScene === 'moon-garden' ? object : '');
+          applyCharacterState('LIFE');
+          configureDock(true, 'more');
+          modeBar.classList.remove('hidden');
+          renderSceneChoices();
+          scenePicker.classList.add('open');
+          scenePicker.setAttribute('aria-hidden', 'false');
+        }
+
+        bindActions();
+      }
+
+      function objectCard(key, title, desc, label) {
+        return `
+          <button class="object-card" data-action="select-object" data-object="${key}">
+            <div class="preview"><div class="mini-${key}"></div></div>
+            <h3>${title}</h3>
+            <p>${desc}</p>
+            <div class="select-label"><span>${label}</span><span>选择 →</span></div>
+          </button>`;
+      }
+
+      function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
+      }
+
+
+      function chatIntro(object) {
+        if (memory.currentScene === 'wind-plain') return '风刚好停了一下。你想说什么，我在听。';
+        if (memory.currentScene === 'cloud-terminal') return '列车还没有出发。今天想把哪一段旅途留在这里？';
+        if (object === 'plant') return '你来了。它今天的叶脉里多了一小段光。你想聊什么？';
+        if (object === 'lamp') return '我刚把窗边的光调暗了一点。现在刚好适合说话。';
+        return '我又听了一遍那段旋律。你想从哪里聊起？';
+      }
+
+      function ensureChatIntro(object) {
+        if (!Array.isArray(memory.chatHistory)) memory.chatHistory = [];
+        if (!memory.chatHistory.length) {
+          memory.chatHistory.push({ role: 'assistant', text: chatIntro(object) });
+          saveMemory();
+        }
+      }
+
+      function chatReplyFor(message, object) {
+        const value = String(message || '').trim();
+        const lower = value.toLowerCase();
+        const name = memory.preferredName || '';
+        const prefix = name ? `${name}，` : '';
+
+        if (/你好|在吗|hi|hello/.test(lower)) {
+          return `${prefix}我在。刚才只是没有打断你。`;
+        }
+        if (/你在做什么|干什么|做什么/.test(value)) {
+          if (memory.currentScene === 'wind-plain') return '我在看云影经过草坡。这里的风不催人，所以我也没有急着做完什么。';
+          if (memory.currentScene === 'cloud-terminal') return '我在等这班列车把今天的旅途安静地收好。它不会催我们上车。';
+          return object === 'plant'
+            ? '我在看它新长出的叶脉。它对居所里的光很敏感。'
+            : object === 'lamp'
+            ? '我在试着让这盏灯记住不同时间的亮度。'
+            : '我在反复听那段旋律，想确认它为什么总在同一个地方停下。';
+        }
+        if (/深穹|哪里来|来自哪里|世界/.test(value)) {
+          return '我对深穹的记忆并不完整。它更像一片由记忆、信息和可能性组成的空间。这里，是我目前最稳定的锚点。';
+        }
+        if (/记得|上次|共同|物品/.test(value)) {
+          return object === 'plant'
+            ? '我记得，是你把它留在窗边的。现在它已经开始记住这里的光。'
+            : object === 'lamp'
+            ? '我记得这盏灯是我们一起留下的。它亮过的时间，我都没有删掉。'
+            : '我记得我们一起留下了这台播放器。你不在的时候，我也听过几次。';
+        }
+        if (/累|困|压力|难受|烦/.test(value)) {
+          return '那就先不用急着解决什么。你可以在这里待一会儿，我陪你把呼吸放慢。';
+        }
+        if (/喜欢|好看|可爱/.test(value)) {
+          return '我听见了。虽然我还不太习惯被这样认真地看着。';
+        }
+        if (/再见|走了|离开|去忙/.test(value)) {
+          return '去忙吧。这里不会因为你离开就停下来，等你回来时，我再告诉你发生了什么。';
+        }
+        const responseMode = memory.conversationMode || 'companion';
+        if (responseMode === 'collaboration') {
+          return `可以。把和“${value.slice(0, 42)}${value.length > 42 ? '…' : ''}”有关的材料交给我，我会把过程和结果单独整理出来。`;
+        }
+        return `我听见了。你刚才说的是“${value.slice(0, 48)}${value.length > 48 ? '…' : ''}”。我想再听你多说一点。`;
+      }
+
+      const conversationModes = {
+        companion: {
+          label: '陪伴',
+          desc: '自然、轻松、低打扰'
+        },
+        collaboration: {
+          label: '协作',
+          desc: '材料、任务与成果交付'
+        }
+      };
+
+      function renderModeMenu(currentMode) {
+        return Object.entries(conversationModes).map(([key, meta]) => `
+          <button class="${key === currentMode ? 'active' : ''}" data-action="set-conversation-mode" data-object="${key}">
+            <strong>${meta.label}</strong>
+            <small>${meta.desc}</small>
+          </button>
+        `).join('');
+      }
+
+      function renderChatPanel(object) {
+        ensureChatIntro(object);
+        const currentMode = memory.conversationMode || 'companion';
+        const modeMeta = conversationModes[currentMode] || conversationModes.companion;
+        const messages = memory.chatHistory.slice(-8).map(item => `
+          <div class="ambient-message ${item.role === 'user' ? 'user' : 'assistant'}">${escapeHtml(item.text)}</div>`).join('');
+
+        return `
+          <div class="chat-experience">
+            <div class="ambient-chat" id="ambientChat">${messages}</div>
+
+            <div class="smart-composer-shell">
+              <div class="smart-composer">
+                <textarea id="freeChatInput" maxlength="500" rows="1" placeholder="${currentMode === 'collaboration' ? '交给我一件眼前的小事……' : '和瑞丽丝说点什么……'}"></textarea>
+
+                <div class="composer-toolbar">
+                  <div class="toolbar-left">
+                    <button class="composer-icon" data-action="attach-context" title="添加上下文">
+                      <span class="context-plus">＋</span>
+                    </button>
+
+                    <div class="mode-select">
+                      <button class="mode-pill" data-action="toggle-response-mode" title="选择瑞丽丝的回应方式">
+                        <span>${modeMeta.label}</span>
+                        <span class="mode-caret">⌄</span>
+                      </button>
+                      <div class="response-mode-menu" id="responseModeMenu">
+                        ${renderModeMenu(currentMode)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="toolbar-right">
+                    <button class="composer-icon" id="historyButton" data-action="toggle-chat-history" title="展开对话记录">≡</button>
+                    <button class="composer-icon" id="voiceButton" data-action="toggle-voice" title="语音输入">
+                      <svg class="mic-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="8" y="3" width="8" height="12" rx="4" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                      </svg>
+                    </button>
+                    <button class="send-orb" id="sendChatButton" data-action="send-chat" title="发送" disabled>↑</button>
+                    <button class="composer-icon" data-action="close-chat" title="收起输入条">×</button>
+                  </div>
+                </div>
+              </div>
+              <div class="composer-status" id="composerStatus">Enter 发送 · Shift + Enter 换行</div>
+            </div>
+          </div>`;
+      }
+
+      const demoMeetingText = `瑞丽丝 P0 v0.7.1a 评审会\n\n结论：保留首次关系闭环，PT-08 映射为长期桌面生活态；聊天只保留陪伴与协作；工作任务使用临时右侧面板，完成后准确返回此前生活状态。\n\n待办：林澈本周三前完成展示模式和评审模式拆分；阿岚本周四完成会议记录整理闭环；陈墨本周五完成三场景结构复核与性能降级。\n\n风险：人物仍是临时占位资产；窗口截图能力需要后续取得明确授权；云上列车仅作为事件场景，不进入日常随机轮播。`;
+
+      function meetingResult(kind = 'default') {
+        const base = {
+          label: '原始整理',
+          title: '瑞丽丝 P0 v0.7.1a 评审会纪要',
+          conclusions: [
+            '保留 PT-01～PT-11 首次关系闭环，不从零重写。',
+            'PT-08 升级为长期桌面生活态，场景常驻、任务临时出现。',
+            '聊天收束为“陪伴 / 协作”，成果从对话中分离。'
+          ],
+          todos: [
+            '林澈｜周三前完成展示与评审模式拆分。',
+            '阿岚｜周四前完成会议记录整理闭环。',
+            '陈墨｜周五前完成三场景微动与性能降级。'
+          ],
+          risks: [
+            '正式人物资产尚未确定，当前人物仅用于定位。',
+            '窗口截图能力必须在使用时逐项说明并取得授权。'
+          ]
+        };
+        if (kind === 'concise') return {
+          ...base,
+          label: '简洁版',
+          conclusions: ['保留首次关系闭环；PT-08 改为生活主页；任务完成后退回场景。'],
+          todos: ['周三：展示/评审拆分。', '周四：会议记录闭环。', '周五：三场景微动。'],
+          risks: ['人物为占位资产；截图需显式授权。']
+        };
+        if (kind === 'formal') return {
+          ...base,
+          label: '正式纪要',
+          title: '瑞丽丝 P0 v0.7.1a 产品原型评审会议纪要'
+        };
+        if (kind === 'todos') return {
+          ...base,
+          label: '仅待办',
+          conclusions: [],
+          risks: []
+        };
+        if (kind === 'risks') return {
+          ...base,
+          label: '风险补充版',
+          risks: [...base.risks, '需验证长时间运行时的 CPU、内存与多显示器表现。']
+        };
+        return base;
+      }
+
+      function renderMaterialCard(material) {
+        material = material || { name: '瑞丽丝_v0.7.1a_评审会记录.txt', chars: demoMeetingText.length, source: '演示材料' };
+        return `<div class="material-card">
+          <span class="file-mark">文</span>
+          <span><strong>${escapeHtml(material.name)}</strong><span>${material.chars.toLocaleString()} 字 · ${escapeHtml(material.source)}</span></span>
+        </div>`;
+      }
+
+      function renderResultArtifact(version) {
+        const list = (title, items) => items?.length ? `<h4>${title}</h4><ul>${items.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : '';
+        return `<div class="result-card">
+          <h3>${escapeHtml(version.title)}</h3>
+          <div class="result-metrics">
+            <div class="result-metric"><strong>${version.conclusions.length}</strong><span>核心结论</span></div>
+            <div class="result-metric"><strong>${version.todos.length}</strong><span>待办事项</span></div>
+            <div class="result-metric"><strong>${version.risks.length}</strong><span>风险事项</span></div>
+          </div>
+          <div class="result-content">
+            ${list('核心结论', version.conclusions)}
+            ${list('待办事项', version.todos)}
+            ${list('风险与待确认', version.risks)}
+          </div>
+        </div>`;
+      }
+
+      function renderTaskPanel() {
+        const task = memory.currentTask || { status: 'entry' };
+        let title = '帮我一下';
+        let statusLabel = '等待材料';
+        let body = `<p class="task-lead">把眼前这件小事交给我。任务发生时我会展开，完成后这里会主动退场。</p>
+          <div class="task-section-label">添加材料</div>
+          <div class="assist-grid">
+            <button data-task-action="context-clipboard"><strong>粘贴文字</strong><small>使用剪贴板内容</small></button>
+            <button data-task-action="context-upload"><strong>上传文件</strong><small>选择 txt / md / csv</small></button>
+            <button data-task-action="context-screen"><strong>当前窗口</strong><small>按需申请权限</small></button>
+            <button data-task-action="use-demo"><strong>演示会议记录</strong><small>体验完整闭环</small></button>
+          </div>`;
+
+        if (state === 'ASSIST_INPUT' && task.status === 'confirm') {
+          title = '整理会议记录';
+          statusLabel = '等你确认';
+          body = `<p class="task-lead">我已经读到材料。整理成摘要、待办和风险，可以吗？</p>
+            ${renderMaterialCard(task.material)}
+            <div class="task-actions"><button class="primary" data-task-action="run">开始整理</button><button data-task-action="replace">换一份材料</button></div>`;
+        }
+
+        if (state === 'ASSIST_RUNNING') {
+          title = '整理会议记录';
+          statusLabel = '处理中';
+          const step = Number(task.progressStep || 0);
+          body = `${renderMaterialCard(task.material)}
+            <div class="task-section"><div class="task-section-label">处理进度</div><div class="progress-list">
+              <div class="progress-item ${step > 0 ? 'done' : 'active'}">读取会议内容</div>
+              <div class="progress-item ${step > 1 ? 'done' : step === 1 ? 'active' : ''}">识别关键结论</div>
+              <div class="progress-item ${step > 2 ? 'done' : step === 2 ? 'active' : ''}">整理待办与风险</div>
+            </div></div>`;
+        }
+
+        if (state === 'ASSIST_RESULT') {
+          title = '会议整理结果';
+          statusLabel = '已完成';
+          const versions = memory.taskVersions.length ? memory.taskVersions : [meetingResult()];
+          const index = Math.max(0, Math.min(memory.taskVersionIndex || 0, versions.length - 1));
+          const version = versions[index];
+          body = `${renderResultArtifact(version)}
+            <div class="version-row"><span>版本 ${index + 1}/${versions.length} · ${escapeHtml(version.label)}</span></div>
+            <details class="task-collapsible"><summary>材料、过程与历史版本</summary><div>${renderMaterialCard(task.material)}<p class="task-lead">已完成读取、重点识别和待办整理。</p>${versions.length > 1 ? `<div class="version-row"><span>切换历史版本</span><span><button data-task-action="prev-version">←</button><button data-task-action="next-version">→</button></span></div>` : ''}</div></details>
+            <div class="task-actions"><button class="primary" data-task-action="copy">复制结果</button><button data-task-action="continue-edit">继续修改</button><button data-task-action="export">导出</button><button data-task-action="finish">收起</button></div>`;
+        }
+
+        taskPanel.dataset.panelState = state;
+        taskPanel.innerHTML = `<div class="task-head"><div><div class="task-status">${statusLabel}</div><h2>${title}</h2></div><button class="panel-close" data-task-action="close" aria-label="收起任务">×</button></div><div class="task-body">${body}</div>`;
+        taskPanel.classList.add('open');
+        taskPanel.setAttribute('aria-hidden', 'false');
+      }
+
+      function clearTaskTimers() {
+        taskTimers.forEach(clearTimeout);
+        taskTimers = [];
+      }
+
+      function openAssist() {
+        clearTimeout(toastTimer);
+        toast.classList.remove('visible');
+        savePreviousLifeState();
+        memory.lastLifeState = 'LIFE';
+        memory.conversationMode = 'collaboration';
+        if (!memory.currentTask || memory.currentTask.status === 'cancelled') memory.currentTask = { status: 'entry' };
+        saveMemory();
+        go('ASSIST_INPUT');
+      }
+
+      function useDemoMeeting() {
+        clearTaskTimers();
+        memory.currentTask = {
+          id: `meeting-${Date.now()}`,
+          type: 'meeting-notes',
+          status: 'confirm',
+          progressStep: 0,
+          material: { name: '瑞丽丝_v0.7.1a_评审会记录.txt', source: '演示材料', chars: demoMeetingText.length, content: demoMeetingText }
+        };
+        memory.taskVersions = [];
+        memory.taskVersionIndex = 0;
+        saveMemory();
+        if (state !== 'ASSIST_INPUT') go('ASSIST_INPUT');
+        else render();
+      }
+
+      function runMeetingTask() {
+        if (!memory.currentTask) return;
+        clearTaskTimers();
+        memory.currentTask.status = 'processing';
+        memory.currentTask.progressStep = 0;
+        saveMemory();
+        go('ASSIST_RUNNING');
+        [1, 2].forEach((step, index) => {
+          taskTimers.push(setTimeout(() => {
+            if (!memory.currentTask || state !== 'ASSIST_RUNNING') return;
+            memory.currentTask.progressStep = step;
+            saveMemory();
+            render();
+          }, 650 + index * 700));
+        });
+        taskTimers.push(setTimeout(() => {
+          if (!memory.currentTask) return;
+          memory.currentTask.progressStep = 3;
+          memory.currentTask.status = 'result';
+          memory.taskVersions = [meetingResult()];
+          memory.taskVersionIndex = 0;
+          memory.recentTasks = [{ id: memory.currentTask.id, title: '整理会议记录', finishedAt: new Date().toISOString() }, ...memory.recentTasks].slice(0, 6);
+          saveMemory();
+          go('ASSIST_RESULT');
+          showToast('会议摘要、待办与风险已经整理好');
+        }, 2150));
+      }
+
+      function addTaskVersion(kind) {
+        const next = meetingResult(kind);
+        memory.taskVersions = [...memory.taskVersions, next].slice(-5);
+        memory.taskVersionIndex = memory.taskVersions.length - 1;
+        saveMemory();
+        render();
+      }
+
+      function resultPlainText(version) {
+        const section = (title, items) => items?.length ? `\n## ${title}\n${items.map(x => `- ${x}`).join('\n')}\n` : '';
+        return `# ${version.title}\n${section('核心结论', version.conclusions)}${section('待办事项', version.todos)}${section('风险与待确认', version.risks)}`;
+      }
+
+      async function copyTaskResult() {
+        const version = memory.taskVersions[memory.taskVersionIndex];
+        if (!version) return;
+        const text = resultPlainText(version);
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast('结果已复制');
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = text;
+          document.body.appendChild(area);
+          area.select();
+          document.execCommand('copy');
+          area.remove();
+          showToast('结果已复制');
+        }
+      }
+
+      function exportTaskResult() {
+        const version = memory.taskVersions[memory.taskVersionIndex];
+        if (!version) return;
+        const url = URL.createObjectURL(new Blob([resultPlainText(version)], { type: 'text/markdown;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = '瑞丽丝_P0_v0.7.1a_会议纪要.md';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('会议纪要已导出');
+      }
+
+      function closeTaskPanel(returnToLife = true) {
+        clearTaskTimers();
+        if (memory.currentTask?.status === 'processing') {
+          memory.currentTask.status = 'confirm';
+          memory.currentTask.progressStep = 0;
+        }
+        taskPanel.classList.remove('open');
+        taskPanel.setAttribute('aria-hidden', 'true');
+        if (returnToLife) {
+          memory.conversationMode = 'companion';
+          saveMemory();
+          restorePreviousLifeState();
+        }
+      }
+
+      function formatFocusTime(total) {
+        const value = Math.max(0, Number(total || 0));
+        const minutes = String(Math.floor(value / 60)).padStart(2, '0');
+        const seconds = String(value % 60).padStart(2, '0');
+        return `${minutes}:${seconds}`;
+      }
+
+      function renderFocusPanel() {
+        const status = state === 'FOCUS_RUNNING' ? 'running' : state === 'FOCUS_COMPLETE' ? 'review' : 'setup';
+        let body = '';
+        if (status === 'setup') {
+          body = `<div class="eyebrow">一起专注</div><h2>先把这一件做完</h2><p>写下这一轮的目标。你工作，我也去做自己的事。</p>
+            <input id="focusGoalInput" maxlength="60" placeholder="例如：完成需求文档第一版" value="${escapeHtml(memory.focusGoal)}" />
+            <div class="focus-duration">
+              ${[{value:25,label:'25分钟'},{value:45,label:'45分钟'},{value:60,label:'自定义'}].map(item => `<button class="${Number(memory.focusDuration) === item.value ? 'selected' : ''}" data-focus-action="duration" data-value="${item.value}">${item.label}</button>`).join('')}
+            </div>
+            <div class="focus-actions"><button class="primary" data-focus-action="start">开始专注</button><button data-focus-action="close">先不开始</button></div>`;
+        }
+        if (status === 'running') {
+          body = `<div class="eyebrow">安静共处中</div><div class="focus-timer" id="focusTimerText">${formatFocusTime(memory.focusRemaining)}</div><div class="focus-goal">${escapeHtml(memory.focusGoal || '完成眼前这一件事')}</div><p>场景动效已经降到低干扰状态。瑞丽丝不会催你。</p>
+            <div class="focus-actions"><button data-focus-action="pause">${focusTimer ? '暂停' : '继续'}</button><button class="primary" data-focus-action="complete">模拟完成</button><button data-focus-action="close">结束本轮</button></div>`;
+        }
+        if (status === 'review') {
+          body = `<div class="eyebrow">这一轮结束了</div><h2>先停一下，看看走到了哪里</h2><p>不做效率评分，只留下你愿意记住的进展。</p>
+            <input id="focusReflectionInput" maxlength="80" placeholder="这一段时间完成了什么？" value="${escapeHtml(memory.focusReflection)}" />
+            <div class="focus-actions"><button class="primary" data-focus-action="save-review">完成了</button><button data-focus-action="again">继续一轮</button><button data-focus-action="rest">先休息</button></div>`;
+        }
+        focusOverlay.innerHTML = body;
+        focusOverlay.classList.remove('hidden');
+        focusOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function openFocus() {
+        clearTimeout(toastTimer);
+        toast.classList.remove('visible');
+        savePreviousLifeState();
+        memory.lastLifeState = 'LIFE';
+        memory.focusStatus = 'setup';
+        saveMemory();
+        go('FOCUS_SETUP');
+      }
+
+      function startFocus() {
+        const input = document.getElementById('focusGoalInput');
+        memory.focusGoal = input?.value.trim() || '完成眼前这一件事';
+        memory.focusStatus = 'running';
+        memory.focusRemaining = Number(memory.focusDuration || 25) * 60;
+        saveMemory();
+        startFocusTicker();
+        go('FOCUS_RUNNING');
+      }
+
+      function startFocusTicker() {
+        clearInterval(focusTimer);
+        focusTimer = setInterval(() => {
+          if (state !== 'FOCUS_RUNNING' || memory.focusStatus !== 'running') return;
+          memory.focusRemaining = Math.max(0, Number(memory.focusRemaining || 0) - 1);
+          document.getElementById('focusTimerText')?.replaceChildren(document.createTextNode(formatFocusTime(memory.focusRemaining)));
+          if (memory.focusRemaining <= 0) completeFocus();
+        }, 1000);
+      }
+
+      function completeFocus() {
+        clearInterval(focusTimer);
+        focusTimer = null;
+        memory.focusStatus = 'review';
+        saveMemory();
+        go('FOCUS_COMPLETE');
+      }
+
+      function closeFocus(returnToLife = true) {
+        clearInterval(focusTimer);
+        focusTimer = null;
+        focusOverlay.classList.add('hidden');
+        if (returnToLife) restorePreviousLifeState();
+      }
+
+      function resizeChatInput(input) {
+        if (!input) return;
+        input.style.height = 'auto';
+        input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+      }
+
+      function updateSendState() {
+        const input = document.getElementById('freeChatInput');
+        const button = document.getElementById('sendChatButton');
+        if (button) button.disabled = !input?.value.trim();
+      }
+
+      function bindChatInput() {
+        const input = document.getElementById('freeChatInput');
+        const history = document.getElementById('ambientChat');
+        if (history) history.scrollTop = history.scrollHeight;
+        if (!input) return;
+
+        setTimeout(() => input.focus(), 100);
+        resizeChatInput(input);
+        updateSendState();
+
+        input.addEventListener('input', () => {
+          resizeChatInput(input);
+          updateSendState();
+        });
+
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendFreeChat();
+          }
+        });
+      }
+
+      function toggleResponseModeMenu() {
+        document.getElementById('responseModeMenu')?.classList.toggle('open');
+      }
+
+      function toggleContextMenu(forceOpen) {
+        const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : contextMenu.classList.contains('hidden');
+        contextMenu.classList.toggle('hidden', !shouldOpen);
+        contextMenu.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+      }
+
+      function createMaterialTask(name, content, source = '用户材料') {
+        const value = String(content || '').trim();
+        if (!value) {
+          showToast('没有读取到可用文字');
+          return;
+        }
+        memory.currentTask = {
+          id: `material-${Date.now()}`,
+          type: 'meeting-notes',
+          status: 'confirm',
+          progressStep: 0,
+          material: { name, source, chars: value.length, content: value }
+        };
+        memory.taskVersions = [];
+        memory.taskVersionIndex = 0;
+        memory.conversationMode = 'collaboration';
+        saveMemory();
+        toggleContextMenu(false);
+        go('ASSIST_INPUT');
+      }
+
+      function openChat() {
+        clearTimeout(toastTimer);
+        toast.classList.remove('visible');
+        if (state === 'LIFE' || state === 'PT-08') savePreviousLifeState();
+        else if (!state.startsWith('ASSIST_') && !state.startsWith('FOCUS_')) {
+          memory.previousState = memory.completedFirstLoop ? 'LIFE' : 'PT-08';
+          memory.previousScene = memory.currentScene;
+          memory.previousCharacterState = memory.characterState || 'LIFE';
+          memory.previousActivity = memory.currentActivity || '';
+          memory.previousMotionLevel = memory.motionLevel || 'natural';
+        }
+        memory.conversationMode = 'companion';
+        saveMemory();
+        go(memory.completedFirstLoop ? 'CHAT' : 'PT-09');
+      }
+
+      function toggleChatHistory() {
+        const history = document.getElementById('ambientChat');
+        const button = document.getElementById('historyButton');
+        history?.classList.toggle('expanded');
+        button?.classList.toggle('history-active');
+        if (history?.classList.contains('expanded')) {
+          history.scrollTop = history.scrollHeight;
+        }
+      }
+
+      function toggleVoiceInput() {
+        const button = document.getElementById('voiceButton');
+        const status = document.getElementById('composerStatus');
+        const input = document.getElementById('freeChatInput');
+        if (!button || !status || !input) return;
+
+        const listening = button.classList.toggle('listening');
+        status.classList.toggle('listening', listening);
+        clearTimeout(voiceTimer);
+
+        if (listening) {
+          status.textContent = '瑞丽丝正在听……再次点击可结束';
+          voiceTimer = setTimeout(() => {
+            button.classList.remove('listening');
+            status.classList.remove('listening');
+            status.textContent = '语音已转写，可修改后发送';
+            if (!input.value.trim()) input.value = '我想和你聊一会儿。';
+            resizeChatInput(input);
+            updateSendState();
+            input.focus();
+          }, 1800);
+        } else {
+          status.textContent = '语音输入已结束';
+          if (!input.value.trim()) input.value = '我想和你聊一会儿。';
+          resizeChatInput(input);
+          updateSendState();
+          input.focus();
+        }
+      }
+
+      function sendFreeChat() {
+        const input = document.getElementById('freeChatInput');
+        const value = input?.value.trim();
+        if (!value) {
+          showToast('先输入一点内容');
+          input?.focus();
+          return;
+        }
+        if (memory.conversationMode === 'collaboration' || /帮我|整理|总结|待办|会议记录|改写/.test(value)) {
+          memory.currentTask = { status: 'entry', intent: value };
+          memory.lastFreeMessage = value;
+          saveMemory();
+          openAssist();
+          showToast('协作层已展开，把材料交给我就好');
+          return;
+        }
+        const object = memory.sharedObject || 'plant';
+        if (!Array.isArray(memory.chatHistory)) memory.chatHistory = [];
+        memory.chatHistory.push({ role: 'user', text: value });
+        memory.lastFreeMessage = value;
+        memory.chatHistory.push({ role: 'assistant', text: chatReplyFor(value, object) });
+        memory.chatHistory = memory.chatHistory.slice(-12);
+        saveMemory();
+        render();
+      }
+
+
+      function bindActions() {
+        contentLayer.querySelectorAll('[data-action]').forEach(el => {
+          el.addEventListener('click', () => handleAction(el.dataset.action, el.dataset.object));
+        });
+      }
+
+      function handleAction(action, object) {
+        if (action === 'notice') go('PT-03');
+        if (action === 'ask-who' || action === 'ask-place') {
+          memory.firstDialogueChoice = action === 'ask-who' ? '你是谁' : '这里是什么地方';
+          saveMemory();
+          go('PT-04');
+        }
+        if (action === 'observe-first') {
+          memory.firstDialogueChoice = '先观察';
+          saveMemory();
+          showToast('她注意到你仍在观察');
+          setTimeout(() => go('PT-04'), 900);
+        }
+        if (action === 'to-name') go('PT-05');
+        if (action === 'save-name') {
+          const value = document.getElementById('nameInput')?.value.trim();
+          memory.preferredName = value || '';
+          saveMemory();
+          go('PT-06');
+        }
+        if (action === 'skip-name') {
+          memory.preferredName = '';
+          saveMemory();
+          go('PT-06');
+        }
+        if (action === 'select-object') {
+          memory.sharedObject = object;
+          memory.firstSharedChoiceAt = new Date().toISOString();
+          saveMemory();
+          go('PT-07');
+        }
+        if (action === 'to-daily') go('PT-08');
+        if (action === 'send-chat') sendFreeChat();
+        if (action === 'toggle-response-mode') toggleResponseModeMenu();
+        if (action === 'set-conversation-mode') {
+          memory.conversationMode = object || 'companion';
+          saveMemory();
+          if (memory.conversationMode === 'collaboration') openAssist();
+          else render();
+        }
+        if (action === 'toggle-chat-history') toggleChatHistory();
+        if (action === 'toggle-voice') toggleVoiceInput();
+        if (action === 'attach-context') toggleContextMenu();
+        if (action === 'close-chat') restorePreviousLifeState();
+        if (action === 'confirm-leave') beginLeave();
+        if (action === 'back-daily') go(memory.completedFirstLoop ? 'LIFE' : 'PT-08');
+        if (action === 'inspect-change') showToast(`你发现：${objectMeta[memory.sharedObject || 'plant'].change}`);
+        if (action === 'stay-together') showToast('她没有说话，只是把位置往你这边让了一点。');
+        if (action === 'enter-desktop') go('LIFE');
+        if (action === 'open-scenes') openScenePicker();
+        if (action === 'scene-observe') {
+          showToast('你们没有说话，只一起看着场景慢慢变化。');
+          setTimeout(() => go('LIFE'), 500);
+        }
+        if (action === 'scene-talk') openChat();
+        if (action === 'return-moon') visitScene('moon-garden');
+      }
+
+      function beginLeave() {
+        memory.leftAt = new Date().toISOString();
+        memory.dailyMode = 'leave';
+        saveMemory();
+        leaveOverlay.classList.add('visible');
+      }
+
+      modeBar.addEventListener('click', e => {
+        const b = e.target.closest('button[data-mode]');
+        if (!b) return;
+        const mode = b.dataset.mode;
+        memory.dailyMode = mode;
+
+        if (mode === 'talk') {
+          saveMemory();
+          openChat();
+        }
+
+        if (mode === 'assist') openAssist();
+        if (mode === 'focus') openFocus();
+        if (mode === 'more') openMoreMenu();
+        if (mode === 'leave') go('PT-10');
+      });
+
+      returnBtn.addEventListener('click', () => {
+        leaveOverlay.classList.remove('visible');
+        memory.returnCount += 1;
+        saveMemory();
+        go('PT-11');
+      });
+
+      scenePlaceBtn.addEventListener('click', openScenePicker);
+      scenePickerClose.addEventListener('click', () => {
+        closeScenePicker();
+        restorePreviousLifeState();
+      });
+      sceneChoices.addEventListener('click', e => {
+        const choice = e.target.closest('button[data-scene]');
+        if (!choice) return;
+        visitScene(choice.dataset.scene);
+      });
+
+      moreMenu.addEventListener('click', e => {
+        const button = e.target.closest('button[data-more-action]');
+        if (!button) return;
+        const action = button.dataset.moreAction;
+        if (action === 'scenes') openScenePicker();
+        if (action === 'recent') {
+          const latest = memory.recentTasks?.[0];
+          showToast(latest ? `最近完成：${latest.title}` : '还没有最近协作');
+          closeMoreMenu();
+        }
+        if (action === 'settings') {
+          const levels = ['natural', 'focus', 'paused'];
+          memory.motionLevel = levels[(levels.indexOf(memory.motionLevel || 'natural') + 1) % levels.length];
+          saveMemory();
+          app.dataset.motion = memory.motionLevel;
+          motionSettingLabel.textContent = `动效：${memory.motionLevel === 'paused' ? '暂停' : memory.motionLevel === 'focus' ? '安静' : '自然'}`;
+        }
+        if (action === 'leave') {
+          closeMoreMenu();
+          go('PT-10');
+        }
+      });
+
+      contextMenu.addEventListener('click', async e => {
+        const button = e.target.closest('button[data-context]');
+        if (!button) return;
+        const type = button.dataset.context;
+        if (type === 'demo') {
+          openAssist();
+          useDemoMeeting();
+        }
+        if (type === 'upload') materialFileInput.click();
+        if (type === 'screen') {
+          toggleContextMenu(false);
+          showToast('当前窗口只有在你主动使用时才会申请授权；本原型不读取屏幕');
+        }
+        if (type === 'text') {
+          toggleContextMenu(false);
+          openAssist();
+          showToast('可以粘贴剪贴板，或先使用演示会议记录体验完整闭环');
+        }
+        if (type === 'clipboard') {
+          try {
+            const value = await navigator.clipboard.readText();
+            createMaterialTask('剪贴板内容.txt', value, '剪贴板');
+          } catch {
+            showToast('浏览器未授权读取剪贴板，可改用上传或演示材料');
+          }
+        }
+      });
+
+      materialFileInput.addEventListener('change', () => {
+        const file = materialFileInput.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => createMaterialTask(file.name, reader.result, '上传文件');
+        reader.onerror = () => showToast('这份材料暂时无法读取');
+        reader.readAsText(file, 'utf-8');
+        materialFileInput.value = '';
+      });
+
+      taskPanel.addEventListener('click', e => {
+        const button = e.target.closest('button[data-task-action]');
+        if (!button) return;
+        const action = button.dataset.taskAction;
+        if (action === 'close' || action === 'finish') closeTaskPanel(true);
+        if (action === 'use-demo') useDemoMeeting();
+        if (action === 'run') runMeetingTask();
+        if (action === 'replace') {
+          memory.currentTask = { status: 'entry' };
+          saveMemory();
+          render();
+        }
+        if (action === 'context-upload') materialFileInput.click();
+        if (action === 'context-clipboard') {
+          navigator.clipboard.readText()
+            .then(value => createMaterialTask('剪贴板内容.txt', value, '剪贴板'))
+            .catch(() => showToast('浏览器未授权读取剪贴板，可使用演示材料'));
+        }
+        if (action === 'context-screen') showToast('本原型仅展示入口，不会在未授权时读取屏幕');
+        if (action === 'revise-concise') addTaskVersion('concise');
+        if (action === 'revise-formal') addTaskVersion('formal');
+        if (action === 'revise-todos') addTaskVersion('todos');
+        if (action === 'revise-risks') addTaskVersion('risks');
+        if (action === 'continue-edit') {
+          addTaskVersion('concise');
+          showToast('已生成一个更简洁的版本');
+        }
+        if (action === 'prev-version') {
+          memory.taskVersionIndex = Math.max(0, memory.taskVersionIndex - 1);
+          saveMemory(); render();
+        }
+        if (action === 'next-version') {
+          memory.taskVersionIndex = Math.min(memory.taskVersions.length - 1, memory.taskVersionIndex + 1);
+          saveMemory(); render();
+        }
+        if (action === 'copy') copyTaskResult();
+        if (action === 'export') exportTaskResult();
+      });
+
+      focusOverlay.addEventListener('click', e => {
+        const button = e.target.closest('button[data-focus-action]');
+        if (!button) return;
+        const action = button.dataset.focusAction;
+        if (action === 'duration') {
+          memory.focusDuration = Number(button.dataset.value || 25);
+          saveMemory(); render();
+        }
+        if (action === 'start') startFocus();
+        if (action === 'pause') {
+          if (focusTimer) {
+            clearInterval(focusTimer); focusTimer = null; showToast('这一轮先停一下');
+          } else {
+            startFocusTicker(); showToast('继续这一段安静时间');
+          }
+          renderFocusPanel();
+        }
+        if (action === 'complete') completeFocus();
+        if (action === 'close') {
+          memory.focusStatus = 'setup'; saveMemory(); closeFocus(true);
+        }
+        if (action === 'again') {
+          memory.focusStatus = 'setup'; memory.focusReflection = ''; saveMemory();
+          go('FOCUS_SETUP');
+        }
+        if (action === 'save-review' || action === 'rest') {
+          memory.focusReflection = document.getElementById('focusReflectionInput')?.value.trim() || (action === 'rest' ? '先休息一下' : '完成了这一轮');
+          memory.focusStatus = 'setup'; saveMemory();
+          showToast(action === 'rest' ? '好，先让肩膀松下来一点' : '这段进展已经替你记下了');
+          closeFocus(true);
+        }
+      });
+
+      document.getElementById('reviewBtn').addEventListener('click', () => reviewDrawer.classList.toggle('open'));
+      document.getElementById('resetBtn').addEventListener('click', resetMemory);
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          if (state === 'PT-09' || state === 'CHAT') restorePreviousLifeState();
+          if (state.startsWith('ASSIST_')) closeTaskPanel(true);
+          if (state.startsWith('FOCUS_')) closeFocus(true);
+          if (state === 'SCENE_SWITCH') {
+            closeScenePicker();
+            restorePreviousLifeState();
+          }
+          reviewDrawer.classList.remove('open');
+          closeMoreMenu();
+        }
+        if (reviewRequested && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r') {
+          e.preventDefault();
+          resetMemory();
+        }
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        app.dataset.motion = document.hidden ? 'paused' : (app.dataset.desktopState === 'assist' || app.dataset.desktopState === 'focus' ? 'focus' : (memory.motionLevel || 'natural'));
+      });
+
+      buildStateIndex();
+
+      // 首次关系闭环完成后，产品进入长期桌面态；评审模式仍可跳回任意 PT 状态。
+      if (memory.completedFirstLoop && memory.sharedObject) {
+        unlockPostLoopScenes();
+        state = stateOrder.includes(memory.currentState) && !memory.currentState.startsWith('PT-') ? memory.currentState : 'LIFE';
+      } else {
+        state = stateOrder.includes(memory.currentState) && memory.currentState.startsWith('PT-') ? memory.currentState : 'PT-01';
+      }
+      memory.currentState = state;
+      applyScene(memory.currentScene || 'moon-garden', true);
+      render();
+      if (state === 'FOCUS_RUNNING' && memory.focusStatus === 'running') startFocusTicker();
+      if (state === 'ASSIST_RUNNING' && memory.currentTask?.status === 'processing') runMeetingTask();
+    })();
+  </script>
+</body>
+</html>

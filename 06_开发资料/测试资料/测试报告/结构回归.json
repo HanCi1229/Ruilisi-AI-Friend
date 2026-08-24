@@ -1,0 +1,186 @@
+{
+  "generatedAt": "2026-08-17T16:39:22.887Z",
+  "browserPath": "regular Playwright (Browser plugin not available)",
+  "pageTitle": "瑞丽丝 P0 交互原型 v0.7.1a · 数字生命桌面版",
+  "defaultDisplay": {
+    "title": "瑞丽丝 P0 交互原型 v0.7.1a · 数字生命桌面版",
+    "topbar": "none",
+    "badge": "none",
+    "caption": "none",
+    "bodyText": 281
+  },
+  "durationLabels": [
+    "25分钟",
+    "45分钟",
+    "自定义"
+  ],
+  "durationStyles": [
+    {
+      "color": "rgb(243, 253, 255)",
+      "background": "rgba(104, 217, 244, 0.14)",
+      "border": "rgb(104, 217, 244)",
+      "selected": true
+    },
+    {
+      "color": "rgba(236, 244, 255, 0.92)",
+      "background": "rgba(8, 17, 34, 0.62)",
+      "border": "rgba(126, 151, 198, 0.34)",
+      "selected": false
+    },
+    {
+      "color": "rgba(236, 244, 255, 0.92)",
+      "background": "rgba(8, 17, 34, 0.62)",
+      "border": "rgba(126, 151, 198, 0.34)",
+      "selected": false
+    }
+  ],
+  "character": {
+    "life": {
+      "left": 486.34228515625,
+      "right": 677.1458129882812,
+      "top": 446.8971252441406,
+      "bottom": 793.4639282226562,
+      "className": "character-wrap working",
+      "pose": "character reading"
+    },
+    "chat": {
+      "left": 486.02032470703125,
+      "right": 676.7818603515625,
+      "top": 447.23968505859375,
+      "bottom": 793.6126098632812,
+      "className": "character-wrap working",
+      "pose": "character greeting"
+    },
+    "assist": {
+      "left": 431.80157470703125,
+      "right": 622.5631103515625,
+      "top": 447.23968505859375,
+      "bottom": 793.6126098632812,
+      "className": "character-wrap working",
+      "pose": "character reading"
+    },
+    "focus": {
+      "left": 454.1822204589844,
+      "right": 637.4381713867188,
+      "top": 514.3899536132812,
+      "bottom": 840.0048217773438,
+      "className": "character-wrap seated",
+      "pose": "character reading"
+    },
+    "assistShift": 54.54071044921875
+  },
+  "taskPanels": {
+    "input": {
+      "left": 1022,
+      "right": 1422,
+      "top": 538,
+      "bottom": 868,
+      "width": 400,
+      "height": 330,
+      "state": "ASSIST_INPUT"
+    },
+    "running": {
+      "left": 1022,
+      "right": 1422,
+      "top": 508,
+      "bottom": 868,
+      "width": 400,
+      "height": 360,
+      "state": "ASSIST_RUNNING"
+    },
+    "result": {
+      "left": 1022,
+      "right": 1422,
+      "top": 18,
+      "bottom": 882,
+      "width": 400,
+      "height": 864,
+      "state": "ASSIST_RESULT"
+    }
+  },
+  "responsive": [
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "panel": {
+        "left": 968,
+        "right": 1348,
+        "top": 406,
+        "bottom": 736,
+        "width": 380,
+        "height": 330,
+        "state": "ASSIST_INPUT"
+      },
+      "character": {
+        "left": 407.37969970703125,
+        "right": 598.1412353515625,
+        "top": 331.08343505859375,
+        "bottom": 677.4563598632812,
+        "className": "character-wrap working",
+        "pose": "character reading"
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "panel": {
+        "left": 1022,
+        "right": 1422,
+        "top": 538,
+        "bottom": 868,
+        "width": 400,
+        "height": 330,
+        "state": "ASSIST_INPUT"
+      },
+      "character": {
+        "left": 431.80157470703125,
+        "right": 622.5631103515625,
+        "top": 447.23968505859375,
+        "bottom": 793.6126098632812,
+        "className": "character-wrap working",
+        "pose": "character reading"
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "panel": {
+        "left": 1482,
+        "right": 1902,
+        "top": 718,
+        "bottom": 1048,
+        "width": 420,
+        "height": 330,
+        "state": "ASSIST_INPUT"
+      },
+      "character": {
+        "left": 590.2078247070312,
+        "right": 780.9693603515625,
+        "top": 605.6459350585938,
+        "bottom": 952.0188598632812,
+        "className": "character-wrap working",
+        "pose": "character reading"
+      }
+    }
+  ],
+  "runtimeErrors": [],
+  "screenshots": [
+    "01-LIFE.png",
+    "02-CHAT.png",
+    "03-ASSIST_INPUT.png",
+    "04-ASSIST_RUNNING.png",
+    "05-ASSIST_RESULT.png",
+    "06-FOCUS_SETUP.png",
+    "07-FOCUS_RUNNING.png",
+    "08-MORE_MENU.png",
+    "RESPONSIVE-1366x768.png",
+    "RESPONSIVE-1440x900.png",
+    "RESPONSIVE-1920x1080.png"
+  ]
+}

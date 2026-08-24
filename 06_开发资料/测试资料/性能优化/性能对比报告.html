@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>瑞丽丝原型 · 性能优化对比报告</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    background: #0a0f1e; color: #e8eeff; padding: 40px 24px; line-height: 1.6;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h1 { font-size: 26px; letter-spacing: .04em; margin-bottom: 6px; }
+  .sub { color: #93a4c6; font-size: 14px; margin-bottom: 28px; }
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .card {
+    background: rgba(20, 30, 56, .85); border: 1px solid rgba(136, 163, 223, .28);
+    border-radius: 18px; padding: 20px 22px;
+  }
+  .card .label { font-size: 13px; color: #93a4c6; margin-bottom: 8px; }
+  .card .big { font-size: 34px; font-weight: 700; color: #5cd7f4; }
+  .card .big .unit { font-size: 15px; color: #93a4c6; font-weight: 400; }
+  .card .delta { font-size: 13px; margin-top: 6px; }
+  .up { color: #77d8ad; }
+  .down { color: #ff8e9e; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-size: 14px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid rgba(136, 163, 223, .18); }
+  th { color: #93a4c6; font-weight: 500; font-size: 13px; }
+  td.b { font-weight: 700; color: #5cd7f4; }
+  h2 { font-size: 18px; margin: 28px 0 14px; color: #dfeaff; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .shot { background: rgba(20, 30, 56, .85); border: 1px solid rgba(136, 163, 223, .28); border-radius: 14px; overflow: hidden; }
+  .shot img { width: 100%; display: block; }
+  .shot .cap { padding: 8px 12px; font-size: 12px; color: #93a4c6; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .chip { background: rgba(92, 215, 244, .1); border: 1px solid rgba(92, 215, 244, .3); color: #9fe4f7; border-radius: 999px; padding: 3px 12px; font-size: 12px; }
+  .note { font-size: 12.5px; color: #93a4c6; background: rgba(20,30,56,.6); border: 1px dashed rgba(136,163,223,.25); border-radius: 12px; padding: 12px 16px; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>瑞丽丝原型 · 性能优化对比</h1>
+  <div class="sub">P0 v0.7.1a · 2026-08-22 · 实测环境：Edge 稳定版 / 1920×1080 / 视频背景播放中</div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="label">优化前 · 初始状态</div>
+      <div class="big">40.1<span class="unit"> fps</span></div>
+      <div class="delta down">▼ 明显掉帧，视觉卡顿</div>
+    </div>
+    <div class="card">
+      <div class="label">优化后 · 初始状态</div>
+      <div class="big">59.6<span class="unit"> fps</span></div>
+      <div class="delta up">▲ +48.6% · 接近满帧</div>
+    </div>
+    <div class="card">
+      <div class="label">优化前 · 评审面板打开</div>
+      <div class="big">47.1<span class="unit"> fps</span></div>
+      <div class="delta down">▼ 面板叠视频时掉帧明显</div>
+    </div>
+    <div class="card">
+      <div class="label">优化后 · 评审面板打开</div>
+      <div class="big">60.2<span class="unit"> fps</span></div>
+      <div class="delta up">▲ +27.8% · 满帧</div>
+    </div>
+  </div>
+
+  <h2>帧率实测（6 秒 rAF 采样）</h2>
+  <table>
+    <tr><th>场景</th><th>优化前</th><th>优化后</th><th>提升</th></tr>
+    <tr><td>初始状态（PT-01/02，视频背景播放）</td><td>40.1 fps</td><td class="b">59.6 fps</td><td class="up">+48.6%</td></tr>
+    <tr><td>打开评审抽屉（22px 毛玻璃大面板）</td><td>47.1 fps</td><td class="b">60.2 fps</td><td class="up">+27.8%</td></tr>
+  </table>
+
+  <h2>优化内容</h2>
+  <div class="chips">
+    <span class="chip">移除 17 处 backdrop-filter 实时模糊</span>
+    <span class="chip">面板底色提浓补偿玻璃感</span>
+    <span class="chip">禁用星空 drift 动画（全屏重绘）</span>
+    <span class="chip">视频层强制 GPU 合成层</span>
+    <span class="chip">页面隐藏时自动暂停视频</span>
+  </div>
+
+  <h2>视觉对比（优化前 / 优化后）</h2>
+  <div class="shots">
+    <div class="shot">
+      <img src="before-init.png" alt="优化前初始状态">
+      <div class="cap">优化前 · 初始状态（40.1 fps）</div>
+    </div>
+    <div class="shot">
+      <img src="after-init.png" alt="优化后初始状态">
+      <div class="cap">优化后 · 初始状态（59.6 fps）</div>
+    </div>
+    <div class="shot">
+      <img src="before-panel.png" alt="优化前开评审面板">
+      <div class="cap">优化前 · 评审面板（47.1 fps）</div>
+    </div>
+    <div class="shot">
+      <img src="after-panel.png" alt="优化后开评审面板">
+      <div class="cap">优化后 · 评审面板（60.2 fps）</div>
+    </div>
+  </div>
+
+  <div class="note">
+    说明：毛玻璃在 Chromium 中对视频背景每帧重新采样+模糊，是主要瓶颈；星空 drift 动画每帧移动全屏 background-position，强制整层重绘。二者移除后 GPU 负载大幅下降。若在更低配机器上仍感吃力，备选方案为将视频降为 30fps 或 720p（解码负载减半），视觉差异极小。
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,949 @@
+{
+  "generatedAt": "2026-08-17T16:40:09.597Z",
+  "browserPath": "regular Playwright (Browser plugin not available)",
+  "pageTitle": "瑞丽丝 P0 交互原型 v0.7.1a · 数字生命桌面版",
+  "moonBaseline": {
+    "scene": "moon-garden",
+    "factor": 1,
+    "reducedMotion": false,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": true,
+    "leafCount": 0,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": true,
+      "plain": false,
+      "terminal": false
+    },
+    "activeGroups": [
+      "moon-garden"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "1",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "5s",
+      "water": "4s",
+      "lamps": [
+        "3.2s",
+        "4.2s",
+        "3.6s",
+        "4.8s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "plain-cloud-drift",
+        "plain-cloud-drift"
+      ],
+      "light": "plain-light-breathe",
+      "grass": "plain-grass-light",
+      "durations": [
+        "5s",
+        "4.4s",
+        "3.8s",
+        "4.6s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "terminal-cloud-drift",
+        "terminal-cloud-drift"
+      ],
+      "mist": "terminal-edge-mist",
+      "lamps": [
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe"
+      ],
+      "durations": [
+        "5s",
+        "4.2s",
+        "3.8s",
+        "3.1s",
+        "4.2s",
+        "4.8s",
+        "3.6s"
+      ]
+    }
+  },
+  "plainInitial": {
+    "scene": "wind-plain",
+    "factor": 1,
+    "reducedMotion": false,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 0,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": false,
+      "plain": true,
+      "terminal": false
+    },
+    "activeGroups": [
+      "wind-plain"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "1",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "5s",
+      "water": "4s",
+      "lamps": [
+        "3.2s",
+        "4.2s",
+        "3.6s",
+        "4.8s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "plain-cloud-drift",
+        "plain-cloud-drift"
+      ],
+      "light": "plain-light-breathe",
+      "grass": "plain-grass-light",
+      "durations": [
+        "5s",
+        "4.4s",
+        "3.8s",
+        "4.6s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "terminal-cloud-drift",
+        "terminal-cloud-drift"
+      ],
+      "mist": "terminal-edge-mist",
+      "lamps": [
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe"
+      ],
+      "durations": [
+        "5s",
+        "4.2s",
+        "3.8s",
+        "3.1s",
+        "4.2s",
+        "4.8s",
+        "3.6s"
+      ]
+    }
+  },
+  "plainParticle": {
+    "scene": "wind-plain",
+    "factor": 1,
+    "reducedMotion": false,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 2,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": false,
+      "plain": true,
+      "terminal": false
+    },
+    "activeGroups": [
+      "wind-plain"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "1",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "5s",
+      "water": "4s",
+      "lamps": [
+        "3.2s",
+        "4.2s",
+        "3.6s",
+        "4.8s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "plain-cloud-drift",
+        "plain-cloud-drift"
+      ],
+      "light": "plain-light-breathe",
+      "grass": "plain-grass-light",
+      "durations": [
+        "5s",
+        "4.4s",
+        "3.8s",
+        "4.6s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "terminal-cloud-drift",
+        "terminal-cloud-drift"
+      ],
+      "mist": "terminal-edge-mist",
+      "lamps": [
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe"
+      ],
+      "durations": [
+        "5s",
+        "4.2s",
+        "3.8s",
+        "3.1s",
+        "4.2s",
+        "4.8s",
+        "3.6s"
+      ]
+    }
+  },
+  "plainQuarter": {
+    "scene": "wind-plain",
+    "factor": 0.25,
+    "reducedMotion": false,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 0,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": false,
+      "plain": true,
+      "terminal": false
+    },
+    "activeGroups": [
+      "wind-plain"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "0.25",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "5s",
+      "water": "4s",
+      "lamps": [
+        "3.2s",
+        "4.2s",
+        "3.6s",
+        "4.8s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "plain-cloud-drift",
+        "plain-cloud-drift"
+      ],
+      "light": "plain-light-breathe",
+      "grass": "plain-grass-light",
+      "durations": [
+        "5s",
+        "4.4s",
+        "3.8s",
+        "4.6s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "terminal-cloud-drift",
+        "terminal-cloud-drift"
+      ],
+      "mist": "terminal-edge-mist",
+      "lamps": [
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe"
+      ],
+      "durations": [
+        "5s",
+        "4.2s",
+        "3.8s",
+        "3.1s",
+        "4.2s",
+        "4.8s",
+        "3.6s"
+      ]
+    }
+  },
+  "terminalInitial": {
+    "scene": "cloud-terminal",
+    "factor": 1,
+    "reducedMotion": false,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 0,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": false,
+      "plain": false,
+      "terminal": true
+    },
+    "activeGroups": [
+      "cloud-terminal"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "1",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "5s",
+      "water": "4s",
+      "lamps": [
+        "3.2s",
+        "4.2s",
+        "3.6s",
+        "4.8s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "plain-cloud-drift",
+        "plain-cloud-drift"
+      ],
+      "light": "plain-light-breathe",
+      "grass": "plain-grass-light",
+      "durations": [
+        "5s",
+        "4.4s",
+        "3.8s",
+        "4.6s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "terminal-cloud-drift",
+        "terminal-cloud-drift"
+      ],
+      "mist": "terminal-edge-mist",
+      "lamps": [
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe"
+      ],
+      "durations": [
+        "5s",
+        "4.2s",
+        "3.8s",
+        "3.1s",
+        "4.2s",
+        "4.8s",
+        "3.6s"
+      ]
+    }
+  },
+  "terminalParticle": {
+    "scene": "cloud-terminal",
+    "factor": 1,
+    "reducedMotion": false,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 0,
+    "terminalLightCount": 1,
+    "timers": {
+      "moon": false,
+      "plain": false,
+      "terminal": true
+    },
+    "activeGroups": [
+      "cloud-terminal"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "1",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "5s",
+      "water": "4s",
+      "lamps": [
+        "3.2s",
+        "4.2s",
+        "3.6s",
+        "4.8s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "plain-cloud-drift",
+        "plain-cloud-drift"
+      ],
+      "light": "plain-light-breathe",
+      "grass": "plain-grass-light",
+      "durations": [
+        "5s",
+        "4.4s",
+        "3.8s",
+        "4.6s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "terminal-cloud-drift",
+        "terminal-cloud-drift"
+      ],
+      "mist": "terminal-edge-mist",
+      "lamps": [
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe"
+      ],
+      "durations": [
+        "5s",
+        "4.2s",
+        "3.8s",
+        "3.1s",
+        "4.2s",
+        "4.8s",
+        "3.6s"
+      ]
+    }
+  },
+  "terminalQuarter": {
+    "scene": "cloud-terminal",
+    "factor": 0.25,
+    "reducedMotion": false,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 0,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": false,
+      "plain": false,
+      "terminal": true
+    },
+    "activeGroups": [
+      "cloud-terminal"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "0.25",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "5s",
+      "water": "4s",
+      "lamps": [
+        "3.2s",
+        "4.2s",
+        "3.6s",
+        "4.8s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "plain-cloud-drift",
+        "plain-cloud-drift"
+      ],
+      "light": "plain-light-breathe",
+      "grass": "plain-grass-light",
+      "durations": [
+        "5s",
+        "4.4s",
+        "3.8s",
+        "4.6s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "terminal-cloud-drift",
+        "terminal-cloud-drift"
+      ],
+      "mist": "terminal-edge-mist",
+      "lamps": [
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe",
+        "terminal-lamp-breathe"
+      ],
+      "durations": [
+        "5s",
+        "4.2s",
+        "3.8s",
+        "3.1s",
+        "4.2s",
+        "4.8s",
+        "3.6s"
+      ]
+    }
+  },
+  "switching": [
+    {
+      "scene": "moon-garden",
+      "activeGroups": [
+        "moon-garden"
+      ],
+      "timers": {
+        "moon": true,
+        "plain": false,
+        "terminal": false
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "wind-plain",
+      "activeGroups": [
+        "wind-plain"
+      ],
+      "timers": {
+        "moon": false,
+        "plain": true,
+        "terminal": false
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "cloud-terminal",
+      "activeGroups": [
+        "cloud-terminal"
+      ],
+      "timers": {
+        "moon": false,
+        "plain": false,
+        "terminal": true
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "moon-garden",
+      "activeGroups": [
+        "moon-garden"
+      ],
+      "timers": {
+        "moon": true,
+        "plain": false,
+        "terminal": false
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "wind-plain",
+      "activeGroups": [
+        "wind-plain"
+      ],
+      "timers": {
+        "moon": false,
+        "plain": true,
+        "terminal": false
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "cloud-terminal",
+      "activeGroups": [
+        "cloud-terminal"
+      ],
+      "timers": {
+        "moon": false,
+        "plain": false,
+        "terminal": true
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "moon-garden",
+      "activeGroups": [
+        "moon-garden"
+      ],
+      "timers": {
+        "moon": true,
+        "plain": false,
+        "terminal": false
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "wind-plain",
+      "activeGroups": [
+        "wind-plain"
+      ],
+      "timers": {
+        "moon": false,
+        "plain": true,
+        "terminal": false
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "cloud-terminal",
+      "activeGroups": [
+        "cloud-terminal"
+      ],
+      "timers": {
+        "moon": false,
+        "plain": false,
+        "terminal": true
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    },
+    {
+      "scene": "moon-garden",
+      "activeGroups": [
+        "moon-garden"
+      ],
+      "timers": {
+        "moon": true,
+        "plain": false,
+        "terminal": false
+      },
+      "particles": {
+        "petals": 0,
+        "leaves": 0,
+        "terminalLights": 0
+      }
+    }
+  ],
+  "reducedPlain": {
+    "scene": "wind-plain",
+    "factor": 1,
+    "reducedMotion": true,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 0,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": false,
+      "plain": false,
+      "terminal": false
+    },
+    "activeGroups": [
+      "wind-plain"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "1",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "0s",
+      "water": "0s",
+      "lamps": [
+        "0s",
+        "0s",
+        "0s",
+        "0s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "none",
+        "none"
+      ],
+      "light": "none",
+      "grass": "none",
+      "durations": [
+        "0s",
+        "0s",
+        "0s",
+        "0s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "none",
+        "none"
+      ],
+      "mist": "none",
+      "lamps": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "durations": [
+        "0s",
+        "0s",
+        "0s",
+        "0s",
+        "0s",
+        "0s",
+        "0s"
+      ]
+    }
+  },
+  "reducedTerminal": {
+    "scene": "cloud-terminal",
+    "factor": 1,
+    "reducedMotion": true,
+    "containerCount": 1,
+    "petalCount": 0,
+    "timerActive": false,
+    "leafCount": 0,
+    "terminalLightCount": 0,
+    "timers": {
+      "moon": false,
+      "plain": false,
+      "terminal": false
+    },
+    "activeGroups": [
+      "cloud-terminal"
+    ],
+    "active": true,
+    "phase": "2c",
+    "motionVariable": "1",
+    "pointerEvents": "none",
+    "ambientZ": "1",
+    "moonDurations": {
+      "glow": "0s",
+      "water": "0s",
+      "lamps": [
+        "0s",
+        "0s",
+        "0s",
+        "0s"
+      ]
+    },
+    "plainAnimations": {
+      "clouds": [
+        "none",
+        "none"
+      ],
+      "light": "none",
+      "grass": "none",
+      "durations": [
+        "0s",
+        "0s",
+        "0s",
+        "0s"
+      ]
+    },
+    "terminalAnimations": {
+      "clouds": [
+        "none",
+        "none"
+      ],
+      "mist": "none",
+      "lamps": [
+        "none",
+        "none",
+        "none",
+        "none"
+      ],
+      "durations": [
+        "0s",
+        "0s",
+        "0s",
+        "0s",
+        "0s",
+        "0s",
+        "0s"
+      ]
+    }
+  },
+  "tenMinuteSoak": {
+    "plain": {
+      "scene": "wind-plain",
+      "factor": 1,
+      "reducedMotion": false,
+      "containerCount": 1,
+      "petalCount": 0,
+      "timerActive": false,
+      "leafCount": 1,
+      "terminalLightCount": 0,
+      "timers": {
+        "moon": false,
+        "plain": true,
+        "terminal": false
+      },
+      "activeGroups": [
+        "wind-plain"
+      ],
+      "active": true,
+      "phase": "2c",
+      "motionVariable": "1",
+      "pointerEvents": "none",
+      "ambientZ": "1",
+      "moonDurations": {
+        "glow": "5s",
+        "water": "4s",
+        "lamps": [
+          "3.2s",
+          "4.2s",
+          "3.6s",
+          "4.8s"
+        ]
+      },
+      "plainAnimations": {
+        "clouds": [
+          "plain-cloud-drift",
+          "plain-cloud-drift"
+        ],
+        "light": "plain-light-breathe",
+        "grass": "plain-grass-light",
+        "durations": [
+          "5s",
+          "4.4s",
+          "3.8s",
+          "4.6s"
+        ]
+      },
+      "terminalAnimations": {
+        "clouds": [
+          "terminal-cloud-drift",
+          "terminal-cloud-drift"
+        ],
+        "mist": "terminal-edge-mist",
+        "lamps": [
+          "terminal-lamp-breathe",
+          "terminal-lamp-breathe",
+          "terminal-lamp-breathe",
+          "terminal-lamp-breathe"
+        ],
+        "durations": [
+          "5s",
+          "4.2s",
+          "3.8s",
+          "3.1s",
+          "4.2s",
+          "4.8s",
+          "3.6s"
+        ]
+      }
+    },
+    "terminal": {
+      "scene": "cloud-terminal",
+      "factor": 1,
+      "reducedMotion": false,
+      "containerCount": 1,
+      "petalCount": 0,
+      "timerActive": false,
+      "leafCount": 0,
+      "terminalLightCount": 1,
+      "timers": {
+        "moon": false,
+        "plain": false,
+        "terminal": true
+      },
+      "activeGroups": [
+        "cloud-terminal"
+      ],
+      "active": true,
+      "phase": "2c",
+      "motionVariable": "1",
+      "pointerEvents": "none",
+      "ambientZ": "1",
+      "moonDurations": {
+        "glow": "5s",
+        "water": "4s",
+        "lamps": [
+          "3.2s",
+          "4.2s",
+          "3.6s",
+          "4.8s"
+        ]
+      },
+      "plainAnimations": {
+        "clouds": [
+          "plain-cloud-drift",
+          "plain-cloud-drift"
+        ],
+        "light": "plain-light-breathe",
+        "grass": "plain-grass-light",
+        "durations": [
+          "5s",
+          "4.4s",
+          "3.8s",
+          "4.6s"
+        ]
+      },
+      "terminalAnimations": {
+        "clouds": [
+          "terminal-cloud-drift",
+          "terminal-cloud-drift"
+        ],
+        "mist": "terminal-edge-mist",
+        "lamps": [
+          "terminal-lamp-breathe",
+          "terminal-lamp-breathe",
+          "terminal-lamp-breathe",
+          "terminal-lamp-breathe"
+        ],
+        "durations": [
+          "5s",
+          "4.2s",
+          "3.8s",
+          "3.1s",
+          "4.2s",
+          "4.8s",
+          "3.6s"
+        ]
+      }
+    }
+  },
+  "runtimeErrors": [],
+  "screenshots": [
+    "terminal-00-second.png",
+    "terminal-04-second.png",
+    "terminal-08-second.png",
+    "terminal-CHAT.png",
+    "terminal-LIFE.png",
+    "terminal-factor-025.png",
+    "terminal-factor-1.png",
+    "terminal-light-visible.png",
+    "terminal-reduced-motion.png",
+    "wind-00-second.png",
+    "wind-04-second.png",
+    "wind-08-second.png",
+    "wind-CHAT.png",
+    "wind-LIFE.png",
+    "wind-factor-025.png",
+    "wind-factor-1.png",
+    "wind-leaf-visible.png",
+    "wind-reduced-motion.png"
+  ]
+}
